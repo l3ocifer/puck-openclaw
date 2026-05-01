@@ -1,6 +1,21 @@
 .git
 .worktrees
 
+# homelab/ overlay is build context for our own Dockerfile (homelab/Dockerfile),
+# but we don't need the rest of homelab/ inside the build context.
+homelab/k8s
+homelab/config
+homelab/shared
+homelab/CHANGELOG.md
+homelab/PATCHES.md
+homelab/README.md
+
+# Skip massive on-disk caches checked in by upstream tooling.
+.serena
+**/.serena
+.cursor/agent-state
+**/.cursor/agent-state
+
 # Sensitive files – scripts/docker/setup.sh writes .env with OPENCLAW_GATEWAY_TOKEN
 # into the project root; keep it out of the build context.
 .env
