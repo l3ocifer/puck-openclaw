@@ -142,6 +142,6 @@ Provided by `puck-secrets` SealedSecret in `agents-shared`:
 | `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID_PUCK` | shared bot, dedicated chat |
 | `NTFY_TOKEN` | finished-piece notifications |
 | `OFP_SHARED_SECRET` | A2A mutual auth |
-| `OP_SERVICE_ACCOUNT_TOKEN` | 1Password (own credentials only) |
+| `BW_CLIENTID` + `BW_CLIENTSECRET` | Vaultwarden API-key login (own credentials only) for ad-hoc lookups via `bw get item` |
 | `MINIO_ACCESS_KEY` + `MINIO_SECRET_KEY` | archive bucket access |
 | `HEALTHCHECKS_UUID` | per-agent UUID for hc-ping.com heartbeats |
