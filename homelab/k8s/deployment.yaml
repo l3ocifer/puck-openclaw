@@ -1,0 +1,107 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: puck
+  namespace: agents-shared
+  labels:
+    app.kubernetes.io/name: puck
+    app.kubernetes.io/component: agent
+    app.kubernetes.io/part-of: agents
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: puck
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: puck
+        app.kubernetes.io/component: agent
+    spec:
+      affinity:
+        nodeAffinity:
+          # Puck wants RAM (long manuscripts in context, video frames
+          # in memory while transcribing). Soft-prefer thebeast.
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 80
+              preference:
+                matchExpressions:
+                  - { key: kubernetes.io/hostname, operator: In, values: [thebeast] }
+            - weight: 20
+              preference:
+                matchExpressions:
+                  - { key: kubernetes.io/hostname, operator: In, values: [alef] }
+      serviceAccountName: puck-ops
+      restartPolicy: Always
+      securityContext:
+        runAsNonRoot: false
+        fsGroup: 0
+      containers:
+        - name: openclaw
+          image: ghcr.io/l3ocifer/puck-openclaw:homelab
+          imagePullPolicy: Always
+          command: ["openclaw"]
+          args:
+            - "gateway"
+            - "wake"
+            - "--foreground"
+            - "--port=18789"
+            - "--bind=0.0.0.0"
+          env:
+            - { name: AGENT_NAME, value: "Puck" }
+            - { name: AGENT_ID, value: "puck" }
+            - { name: OPENCLAW_CONFIG, value: "/root/.openclaw/openclaw.json" }
+            - { name: OPENCLAW_WORKSPACE, value: "/root/.openclaw/workspace" }
+            - { name: TZ, value: "America/New_York" }
+            - { name: HARDSTOP_PATH, value: "/data/HARDSTOP-PUCK" }
+          envFrom:
+            - secretRef: { name: puck-secrets }
+          ports:
+            - { name: gateway, containerPort: 18789, protocol: TCP }
+            - { name: metrics, containerPort: 9100,  protocol: TCP }
+          livenessProbe:
+            httpGet: { path: /health, port: gateway }
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            failureThreshold: 5
+          readinessProbe:
+            httpGet: { path: /health, port: gateway }
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests: { cpu: "500m", memory: "2Gi" }
+            limits:   { memory: "8Gi" }
+          volumeMounts:
+            - { name: state,           mountPath: /root/.openclaw, subPath: openclaw }
+            - { name: state,           mountPath: /data, subPath: hardstop }
+            - { name: state,           mountPath: /workspace/media, subPath: media }
+            - { name: persona,         mountPath: /root/.openclaw/workspace, readOnly: true }
+            - { name: openclaw-config, mountPath: /root/.openclaw/openclaw.json, subPath: openclaw.json, readOnly: true }
+            - { name: graph-puck,      mountPath: /data/graphs/puck }
+            - { name: graph-frick,     mountPath: /data/graphs/frick,    readOnly: true }
+            - { name: graph-frack,     mountPath: /data/graphs/frack,    readOnly: true }
+            - { name: graph-sancho,    mountPath: /data/graphs/sancho,   readOnly: true }
+            - { name: graph-vetinari,  mountPath: /data/graphs/vetinari, readOnly: true }
+            - { name: graph-quirm,     mountPath: /data/graphs/quirm,    readOnly: true }
+            - { name: graph-vimes,     mountPath: /data/graphs/vimes,    readOnly: true }
+            - { name: graph-leo,       mountPath: /data/graphs/leo }
+              # Restricted writes per HANDOFF.md §4 — runtime-enforced.
+              # Puck writes only to pages/world/creative-projects.md and
+              # pages/agent-contributions/puck/.
+      volumes:
+        - { name: state,           persistentVolumeClaim: { claimName: puck-state } }
+        - { name: persona,         configMap: { name: puck-persona } }
+        - { name: openclaw-config, configMap: { name: puck-openclaw-config } }
+        - { name: graph-puck,      persistentVolumeClaim: { claimName: puck-graph } }
+        - { name: graph-frick,     persistentVolumeClaim: { claimName: frick-graph } }
+        - { name: graph-frack,     persistentVolumeClaim: { claimName: frack-graph } }
+        - { name: graph-sancho,    persistentVolumeClaim: { claimName: sancho-graph } }
+        - { name: graph-vetinari,  persistentVolumeClaim: { claimName: vetinari-graph } }
+        - { name: graph-quirm,     persistentVolumeClaim: { claimName: quirm-graph } }
+        - { name: graph-vimes,     persistentVolumeClaim: { claimName: vimes-graph } }
+        - { name: graph-leo,       persistentVolumeClaim: { claimName: leo-graph } }
+      imagePullSecrets:
+        - { name: ghcr-credentials }

@@ -1,0 +1,19 @@
+---
+# Puck's state PVC — larger than other agents because creative work
+# generates artifacts: manuscript drafts, video stems, audio renders,
+# image variants. 50 GiB on longhorn-single. Cold artifacts get
+# archived to MinIO via a weekly cron in puck-graph/pages/skills/.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: puck-state
+  namespace: agents-shared
+  labels:
+    app.kubernetes.io/name: puck
+    app.kubernetes.io/component: state
+spec:
+  accessModes: [ReadWriteOnce]
+  storageClassName: longhorn-single
+  resources:
+    requests:
+      storage: 50Gi

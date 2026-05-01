@@ -1,0 +1,47 @@
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: puck
+  namespace: agents-shared
+spec:
+  entryPoints: [websecure]
+  routes:
+    - match: Host(`puck.leopaska.xyz`)
+      kind: Rule
+      services:
+        - { name: puck, port: 18789 }
+      middlewares:
+        - { name: authelia, namespace: authelia }
+  tls:
+    secretName: puck-leopaska-tls
+    domains:
+      - main: puck.leopaska.xyz
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: puck-leopaska-tls
+  namespace: agents-shared
+spec:
+  secretName: puck-leopaska-tls
+  dnsNames: [puck.leopaska.xyz]
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: puck-metrics
+  namespace: agents-shared
+  labels:
+    release: kube-prometheus-stack
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: puck
+  endpoints:
+    - port: metrics
+      interval: 30s
+      path: /metrics
