@@ -24,15 +24,24 @@ RUN corepack enable
 
 WORKDIR /app
 
+# pnpm peeks at patches/, scripts/, ui/package.json, and openclaw.mjs at
+# install time (preinstall/postinstall hooks + patchedDependencies).
+# COPY them in BEFORE pnpm install or the install fails with ENOENT.
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml* tsconfig*.json* ./
 COPY .npmrc .npmrc
+COPY openclaw.mjs ./
+COPY ui/package.json ./ui/package.json
+COPY patches ./patches
+COPY scripts ./scripts
 
 RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
+    NODE_OPTIONS=--max-old-space-size=2048 \
     pnpm install --frozen-lockfile --prod=false
 
 COPY . .
 
-RUN pnpm build && pnpm ui:build || true
+RUN pnpm build:docker || pnpm build || true
+RUN pnpm ui:build || true
 
 # ─── Stage 2: runtime ────────────────────────────────────────────────
 FROM node:24-bookworm-slim
