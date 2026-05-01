@@ -43,13 +43,12 @@ spec:
         - name: openclaw
           image: ghcr.io/l3ocifer/puck-openclaw:homelab
           imagePullPolicy: Always
-          command: ["openclaw"]
+          command: ["node", "/opt/openclaw/openclaw.mjs"]
           args:
             - "gateway"
-            - "wake"
-            - "--foreground"
             - "--port=18789"
-            - "--bind=0.0.0.0"
+            - "--bind=lan"
+            - "--allow-unconfigured"
           env:
             - { name: AGENT_NAME, value: "Puck" }
             - { name: AGENT_ID, value: "puck" }
@@ -63,12 +62,12 @@ spec:
             - { name: gateway, containerPort: 18789, protocol: TCP }
             - { name: metrics, containerPort: 9100,  protocol: TCP }
           livenessProbe:
-            httpGet: { path: /health, port: gateway }
+            httpGet: { path: /healthz, port: gateway }
             initialDelaySeconds: 30
             periodSeconds: 30
             failureThreshold: 5
           readinessProbe:
-            httpGet: { path: /health, port: gateway }
+            httpGet: { path: /readyz, port: gateway }
             initialDelaySeconds: 5
             periodSeconds: 10
           resources:
