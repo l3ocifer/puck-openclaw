@@ -256,6 +256,20 @@
     ]
   },
 
+  // Fleet event bus — durable async A2A backbone shared by all
+  // seven agents. Backed by Postgres LISTEN/NOTIFY on the `fleet` DB.
+  fleet: {
+    enabled: true,
+    agentId: "puck",
+    databaseUrlEnv: "FLEET_DATABASE_URL",
+    notifyChannel: "fleet_events_new",
+    inbound: {
+      // Puck only wakes for things explicitly pinged at the creative
+      // surface or all-broadcast P0s.
+      predicate: "severity = 'p0' OR target IS NULL OR target = 'puck' OR kind LIKE 'creative.%'",
+    },
+  },
+
   cron: [
     {
       schedule: "30 6 * * *",
