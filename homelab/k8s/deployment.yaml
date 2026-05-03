@@ -59,9 +59,18 @@ spec:
               mkdir -p /workspace /agent-state
               cp -f /persona/*.md /workspace/ 2>/dev/null || true
               ls -la /workspace
+              # Auth-profiles.json — both `litellm` (custom catalog) and
+              # `openai` (built-in agent default for `gpt-5.5`) pointed at
+              # the cluster LiteLLM proxy so every model the built-in
+              # OpenClaw catalog references is served locally.
               cat > /agent-state/auth-profiles.json <<JSON
               {
                 "litellm": {
+                  "type": "api_key",
+                  "apiKey": "${LITELLM_API_KEY}",
+                  "baseUrl": "http://litellm.inference.svc.cluster.local:4000/v1"
+                },
+                "openai": {
                   "type": "api_key",
                   "apiKey": "${LITELLM_API_KEY}",
                   "baseUrl": "http://litellm.inference.svc.cluster.local:4000/v1"
