@@ -213,27 +213,9 @@
     bind: "0.0.0.0",
   },
 
-  channels: {
-    matrix: {
-      enabled: true,
-      homeserver: "https://conduit.leopaska.xyz",
-      userId: "@puck:leopaska.xyz",
-      accessTokenEnv: "MATRIX_ACCESS_TOKEN",
-      defaultRoom: "!homelab:leopaska.xyz",
-    },
-    telegram: {
-      enabled: true,
-      botTokenEnv: "TELEGRAM_BOT_TOKEN",
-      prefix: "/puck",
-    },
-    ntfy: {
-      enabled: true,
-      outboundOnly: true,
-      topicUrl: "https://ntfy.leopaska.xyz/puck",
-      bearerTokenEnv: "NTFY_TOKEN",
-    },
-    // No iMessage, no BlueBubbles, no Stripe — Puck is internal-only.
-  },
+  // NOTE: channels block omitted; plugins auto-discover from env vars.
+  // See frack-openclaw/homelab/config/openclaw.json for the full
+  // rationale. Puck registers on matrix + telegram only (no bluebubbles).
 
   // NOTE: the previous `hardKill`, `quietHours`, `a2a`, `fleet`, and
   // `cron`-as-array blocks were rejected by the upstream OpenClaw config
