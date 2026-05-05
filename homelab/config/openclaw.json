@@ -120,7 +120,8 @@
       thinkingDefault: "low",
       heartbeat: {
         every: "30m",
-        target: "https://hc-ping.com/puck-${HEALTHCHECKS_UUID}",
+        target: "last",  // schema rejects arbitrary URLs as targets;
+                          // outbound healthchecks.io ping handled separately.
       },
       memorySearch: {
         enabled: true,

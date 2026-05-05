@@ -100,10 +100,20 @@ spec:
               JSON
               chmod 600 /agent-state/auth-profiles.json
               ls -la /agent-state/
+              # Seed a writable copy of openclaw.json (see frack-openclaw
+              # deployment.yaml for full rationale — ConfigMap mount is
+              # read-only but OpenClaw needs to persist plugin auto-enable
+              # changes, so it 401s with EBUSY at boot).
+              mkdir -p /openclaw-runtime
+              cp -f /openclaw-config-src/openclaw.json /openclaw-runtime/openclaw.json
+              chmod 644 /openclaw-runtime/openclaw.json
+              ls -la /openclaw-runtime/
           volumeMounts:
-            - { name: state, mountPath: /workspace,   subPath: openclaw/workspace }
-            - { name: state, mountPath: /agent-state, subPath: openclaw/agents/main/agent }
-            - { name: persona, mountPath: /persona,   readOnly: true }
+            - { name: state,           mountPath: /workspace,           subPath: openclaw/workspace }
+            - { name: state,           mountPath: /agent-state,         subPath: openclaw/agents/main/agent }
+            - { name: state,           mountPath: /openclaw-runtime,    subPath: openclaw/runtime-config }
+            - { name: persona,         mountPath: /persona,             readOnly: true }
+            - { name: openclaw-config, mountPath: /openclaw-config-src, readOnly: true }
       containers:
         - name: openclaw
           image: ghcr.io/l3ocifer/puck-openclaw:homelab
@@ -117,11 +127,10 @@ spec:
           env:
             - { name: AGENT_NAME, value: "Puck" }
             - { name: AGENT_ID, value: "puck" }
-            # Point OpenClaw at the persona ConfigMap mount (see
-            # frack-openclaw/homelab/k8s/deployment.yaml for the full
-            # 2026-05-05 schema-migration rationale).
-            - { name: OPENCLAW_CONFIG, value: "/root/.openclaw/openclaw.json" }
-            - { name: OPENCLAW_CONFIG_PATH, value: "/root/.openclaw/openclaw.json" }
+            # OPENCLAW_CONFIG points at the writable runtime-config copy
+            # seeded by the seed-workspace init container.
+            - { name: OPENCLAW_CONFIG, value: "/root/.openclaw/runtime-config/openclaw.json" }
+            - { name: OPENCLAW_CONFIG_PATH, value: "/root/.openclaw/runtime-config/openclaw.json" }
             - { name: OPENCLAW_WORKSPACE, value: "/root/.openclaw/workspace-rw" }
             - { name: TZ, value: "America/New_York" }
             - { name: HARDSTOP_PATH, value: "/data/HARDSTOP-PUCK" }
@@ -162,12 +171,13 @@ spec:
             # persona ConfigMap into it at startup; OpenClaw can then
             # write its `.openclaw/` runtime state alongside.
             - { name: state,           mountPath: /root/.openclaw/workspace-rw, subPath: openclaw/workspace }
+            # Writable runtime config seeded by the init container.
+            - { name: state,           mountPath: /root/.openclaw/runtime-config, subPath: openclaw/runtime-config }
             # OpenClaw's workspace bootstrap falls back to packaged templates
             # at /opt/openclaw/docs/reference/templates. The homelab image does
             # not currently package docs/, so expose the same bootstrap files
             # from the persona ConfigMap to keep heartbeat/cron bootstrap alive.
             - { name: persona,         mountPath: /opt/openclaw/docs/reference/templates, readOnly: true }
-            - { name: openclaw-config, mountPath: /root/.openclaw/openclaw.json, subPath: openclaw.json, readOnly: true }
             - { name: graph-puck,      mountPath: /data/graphs/puck }
             - { name: graph-frick,     mountPath: /data/graphs/frick,    readOnly: true }
             - { name: graph-frack,     mountPath: /data/graphs/frack,    readOnly: true }
