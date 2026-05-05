@@ -110,16 +110,9 @@
         primary:   "litellm/chat",
         fallbacks: ["litellm/long", "litellm/frontier"],
       },
-      // Embedded harness (skill creation, commit-message synthesis, etc.)
-      // defaulted to gpt-5.5/openai upstream and hit api.openai.com
-      // directly with our LITELLM_API_KEY → 401. Pin it at the same
-      // LiteLLM front door the main agent uses.
-      agentRuntime: {
-        defaults: {
-          provider: "litellm",
-          model: "chat",
-        },
-      },
+      // NOTE: previous `agentRuntime: { defaults: {...} }` block removed
+      // (AgentRuntimePolicySchema only accepts {id, fallback}). The
+      // embedded harness now follows the main model.primary above.
       workspace: "/root/.openclaw/workspace",
       compaction: { mode: "safeguard" },
       contextPruning: { mode: "cache-ttl", ttl: "2h" },
@@ -127,7 +120,6 @@
       thinkingDefault: "low",
       heartbeat: {
         every: "30m",
-        offsetMinutes: 25,
         target: "https://hc-ping.com/puck-${HEALTHCHECKS_UUID}",
       },
       memorySearch: {
@@ -145,18 +137,20 @@
           "/data/graphs/quirm/pages",
           "/data/graphs/vimes/pages",
         ],
-        provider: "litellm",
-        litellm: {
-          embedModel: "embed",
+        provider: "remote",
+        remote: {
+          baseUrl: "http://litellm.inference.svc.cluster.local:4000/v1",
+          apiKey: { source: "env", provider: "default", id: "LITELLM_API_KEY" },
         },
+        model: "embed",
         fallback: "local",
         local: {
           modelPath: "hf:ggml-org/embeddinggemma-300M-GGUF/embeddinggemma-300M-Q8_0.gguf",
         },
         store: {
-          backend: "postgres-pgvector",
-          urlEnv: "DATABASE_URL",
-          schema: "puck_memory",
+          driver: "sqlite",
+          path: "/root/.openclaw/workspace-rw/memory/index.sqlite",
+          vector: { enabled: true },
         },
         sync: {
           watch: true,
