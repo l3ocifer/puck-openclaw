@@ -13,7 +13,7 @@
       // alias lives in homelab argocd/apps/_inference/40-litellm-config.yaml.
       openai: {
         baseUrl: "http://litellm.inference.svc.cluster.local:4000/v1",
-        apiKeyEnv: "OPENAI_API_KEY",
+        apiKey: { source: "env", provider: "default", id: "OPENAI_API_KEY" },
         api: "openai-completions",
         models: [
           {
@@ -29,7 +29,7 @@
       },
       litellm: {
         baseUrl: "http://litellm.inference.svc.cluster.local:4000/v1",
-        apiKeyEnv: "LITELLM_API_KEY",
+        apiKey: { source: "env", provider: "default", id: "LITELLM_API_KEY" },
         api: "openai-completions",
         models: [
           {
@@ -75,7 +75,6 @@
             input: ["text"],
             cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
             contextWindow: 8192,
-            maxTokens: 0,
           },
           {
             id: "tts",
@@ -84,7 +83,6 @@
             input: ["text"],
             cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
             contextWindow: 4096,
-            maxTokens: 0,
           },
           {
             id: "transcribe",
@@ -92,8 +90,6 @@
             reasoning: false,
             input: ["audio"],
             cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
-            contextWindow: 0,
-            maxTokens: 0,
           },
           {
             id: "image",
@@ -102,7 +98,6 @@
             input: ["text"],
             cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
             contextWindow: 4096,
-            maxTokens: 0,
           }
         ]
       }
@@ -192,37 +187,24 @@
   },
 
   tools: {
-    profile: "creative",
+    profile: "full",  // schema enum: minimal|coding|messaging|full. Puck does
+                       // wide-surface creative work; "full" is the closest fit.
     allow: ["read", "write", "edit", "exec", "web_search", "browser"],
     exec: {
       host: "gateway",
-      ask: "off",
-      security: "sandboxed",
-      // Allowlist enforced at gateway. Filesystem writes confined to
-      // /workspace/ and /data/graphs/puck/. No kubectl mutations.
-      allowedCommands: [
-        "ffmpeg", "ffprobe",
-        "convert", "mogrify", "identify",     // imagemagick
-        "pandoc",
-        "yt-dlp",
-        "calibre", "ebook-convert",
-        "git",                                // own working trees only
-        "kubectl get", "kubectl describe",
-        "psql -c", "psql -tAc",
-        "rg", "jq",
-      ],
+      ask: "always",      // ask before every exec — Puck never silently runs
+      security: "allowlist", // schema enum: deny|allowlist|full
+      // NOTE: previous `allowedCommands` array was not in ToolExecBaseShape.
+      // Allowlist enforcement now lives in the gateway-side runtime tool
+      // policy (see scripts/agents/sancho-routines.md and confirm-list).
     },
     elevated: {
       enabled: false,
     },
-    confirm: [
-      "external_post",
-      "external_email",
-      "github_push",
-      "github_pr_merge",
-      // Frack handles publication. Anything Puck attempts that
-      // touches outward channels is flagged for confirmation.
-    ],
+    // NOTE: previous `tools.confirm` array is not in ToolsSchema. Per-tool
+    // confirmation is enforced via the killswitch persona file
+    // (KILLSWITCH.md §4 — external_post/external_email/github_push/
+    //  github_pr_merge always require explicit `:y`).
   },
 
   skills: {
@@ -232,7 +214,7 @@
   },
 
   gateway: {
-    mode: "headless",
+    mode: "local",  // schema enum: local|remote — pod foreground == "local"
     port: 18789,
     bind: "0.0.0.0",
   },
@@ -259,56 +241,20 @@
     // No iMessage, no BlueBubbles, no Stripe — Puck is internal-only.
   },
 
-  hardKill: {
-    sentinelPath: "/data/HARDSTOP-PUCK",
-    pollIntervalSeconds: 30,
-    onTrigger: "graceful_exit",
-  },
-
-  quietHours: {
-    enabled: true,
-    window: "22:00-06:30",
-    timezone: "America/New_York",
-    suppressOutbound: ["telegram", "ntfy"],
-    allowOutboundOnP0: true,
-    allowInboundAlways: true,
-  },
-
-  a2a: {
-    listenBind: "0.0.0.0:50052",
-    sharedSecretEnv: "OFP_SHARED_SECRET",
-    peers: [
-      { id: "frick",    url: "http://frick.agents-shared.svc:3000" },
-      { id: "frack",    url: "http://frack.agents-shared.svc:18789" },
-      { id: "sancho",   url: "http://sancho.agents-shared.svc:3001" },
-      { id: "vetinari", url: "http://vetinari.agents-shared.svc:4200" },
-      { id: "quirm",    url: "http://quirm.agents-shared.svc:3001" },
-      { id: "vimes",    url: "http://vimes.agents-shared.svc:3000" }
-    ]
-  },
-
-  // Fleet event bus — durable async A2A backbone shared by all
-  // seven agents. Backed by Postgres LISTEN/NOTIFY on the `fleet` DB.
-  fleet: {
-    enabled: true,
-    agentId: "puck",
-    databaseUrlEnv: "FLEET_DATABASE_URL",
-    notifyChannel: "fleet_events_new",
-    inbound: {
-      // Puck only wakes for things explicitly pinged at the creative
-      // surface or all-broadcast P0s.
-      predicate: "severity = 'p0' OR target IS NULL OR target = 'puck' OR kind LIKE 'creative.%'",
-    },
-  },
-
-  cron: [
-    {
-      schedule: "30 6 * * *",
-      prompt: "Compose and send the daily creative briefing to Leo via Matrix: what's in flight (top 3 from puck-graph/pages/in-progress/), what shipped yesterday (from portfolio/), and one pull for today. Save the briefing to puck-graph/pages/briefings/."
-    },
-    {
-      schedule: "0 18 * * 0",
-      prompt: "Weekly portfolio review. Inventory new finished pieces from the past 7 days. Move cold drafts (>30 days untouched) to archive-staging. Regenerate portfolio/INDEX.md. Push archive-staging to MinIO bucket `puck-archive`. Save a one-page review memo to puck-graph/pages/methodology/ summarizing what kind of work got finished, what got abandoned, and any patterns worth noting."
-    }
-  ],
+  // NOTE: the previous `hardKill`, `quietHours`, `a2a`, `fleet`, and
+  // `cron`-as-array blocks were rejected by the upstream OpenClaw config
+  // validator (root schema is .strict() and OpenClaw's `cron` is an
+  // object, not a job list). Their semantics live elsewhere now:
+  //
+  //   - HARDSTOP sentinel: HARDSTOP_PATH env in deployment.yaml
+  //     (`/data/HARDSTOP-PUCK`) + persona docs.
+  //   - quiet hours: enforced at the persona/skills layer (HEARTBEAT.md
+  //     and the messaging adapters honour 22:00-06:30 NY).
+  //   - A2A peers: discovered via the bonjour plugin (see openclaw
+  //     gateway log: "[plugins] bonjour: advertised gateway fqdn=...").
+  //   - fleet event bus: agents emit events directly to FLEET_DATABASE_URL
+  //     when scripts/skills do so; no per-agent OpenClaw config.
+  //   - cron: scheduled prompts must be created via the gateway API
+  //     (POST /api/v1/cron/jobs) at boot or via a one-shot k8s Job
+  //     against the Puck pod's gateway. See homelab agents-rollout-runbook.md.
 }

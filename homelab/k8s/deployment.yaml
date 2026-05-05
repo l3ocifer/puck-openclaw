@@ -117,13 +117,11 @@ spec:
           env:
             - { name: AGENT_NAME, value: "Puck" }
             - { name: AGENT_ID, value: "puck" }
-            # KNOWN ISSUE 2026-05-05: see frack-openclaw deployment.yaml
-            # for the schema-mismatch story. Until our persona config is
-            # migrated to the current OpenClaw schema, OpenClaw boots
-            # with the auto-generated /tmp/openclaw-missing.json and
-            # routing comes from OPENAI_BASE_URL + OPENAI_API_KEY env.
-            - { name: OPENCLAW_CONFIG, value: "/tmp/openclaw-missing.json" }
-            - { name: OPENCLAW_CONFIG_PATH, value: "/tmp/openclaw-missing.json" }
+            # Point OpenClaw at the persona ConfigMap mount (see
+            # frack-openclaw/homelab/k8s/deployment.yaml for the full
+            # 2026-05-05 schema-migration rationale).
+            - { name: OPENCLAW_CONFIG, value: "/root/.openclaw/openclaw.json" }
+            - { name: OPENCLAW_CONFIG_PATH, value: "/root/.openclaw/openclaw.json" }
             - { name: OPENCLAW_WORKSPACE, value: "/root/.openclaw/workspace-rw" }
             - { name: TZ, value: "America/New_York" }
             - { name: HARDSTOP_PATH, value: "/data/HARDSTOP-PUCK" }
