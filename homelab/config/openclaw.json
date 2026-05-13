@@ -100,12 +100,30 @@
           //   - a one-off song/lyric that needs tight metric craft
           // First/second drafts and ideation stay on `chat` / `frontier`.
           // Bridge policy enforces both the 7-day quota and Puck's 8%
-          // share. Puck is approved for Sonnet only; on 429 LiteLLM
-          // cascades sonnet→chat→frontier so creative sessions never
-          // hard-fail.
+          // share. The agent may choose any Claude Code model at call
+          // time via claude-code/<cli-model>; on 429 LiteLLM falls back
+          // to local models so creative sessions never hard-fail.
           {
             id: "claude-sonnet-max",
             name: "Claude Sonnet 4.6 via household Max subscription",
+            reasoning: true,
+            input: ["text"],
+            cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+            contextWindow: 200000,
+            maxTokens: 8192,
+          },
+          {
+            id: "claude-opus-max",
+            name: "Claude Opus via household Max subscription",
+            reasoning: true,
+            input: ["text"],
+            cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+            contextWindow: 200000,
+            maxTokens: 8192,
+          },
+          {
+            id: "claude-code/*",
+            name: "Claude Code model selected at call time",
             reasoning: true,
             input: ["text"],
             cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
