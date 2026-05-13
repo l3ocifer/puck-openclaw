@@ -52,6 +52,11 @@ type GatewayPluginRequestHandler = (
   },
 ) => Promise<boolean>;
 
+type GatewayA2aRequestHandler = (
+  req: IncomingMessage,
+  res: ServerResponse,
+) => Promise<boolean>;
+
 type GatewayPluginUpgradeHandler = (
   req: IncomingMessage,
   socket: Duplex,
@@ -82,6 +87,7 @@ export async function createGatewayRuntimeState(params: {
   rateLimiter?: AuthRateLimiter;
   gatewayTls?: GatewayTlsRuntime;
   hooksConfig: () => HooksConfigResolved | null;
+  handleA2aRequest?: GatewayA2aRequestHandler;
   getHookClientIpConfig: () => HookClientIpConfig;
   pluginRegistry: PluginRegistry;
   pinChannelRegistry?: boolean;
@@ -240,6 +246,7 @@ export async function createGatewayRuntimeState(params: {
         openResponsesConfig: params.openResponsesConfig,
         strictTransportSecurityHeader: params.strictTransportSecurityHeader,
         handleHooksRequest,
+        handleA2aRequest: params.handleA2aRequest,
         handlePluginRequest,
         shouldEnforcePluginGatewayAuth,
         resolvePluginNodeCapabilityRoute,

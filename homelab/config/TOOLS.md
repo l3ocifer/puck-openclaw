@@ -129,6 +129,26 @@ Configured in `homelab/config/openclaw.json`. Puck's enabled toolsets:
 Puck does NOT have `kubectl write`, BlueBubbles, Stripe, or Home
 Assistant tools.
 
+## Web Search
+
+Use the internal self-hosted search/extract service when native
+`web_search` is unavailable or has no provider:
+
+```bash
+curl -s "$AGENT_TOOL_SERVICE_URL/search?q=public+domain+poetry+archives&limit=5"
+```
+
+Extract page text after picking a result:
+
+```bash
+curl -s -X POST "$AGENT_TOOL_SERVICE_URL/extract" \
+  -H 'content-type: application/json' \
+  -d '{"url":"https://example.com","max_chars":12000}'
+```
+
+`SEARXNG_URL` points at the raw no-key SearXNG backend for skills that
+call `/search?format=json` directly.
+
 ## Required env vars
 
 Provided by `puck-secrets` SealedSecret in `agents-shared`:
