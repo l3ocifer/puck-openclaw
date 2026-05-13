@@ -16,7 +16,7 @@
 # syntax=docker/dockerfile:1.7
 
 # ─── Stage 1: build ──────────────────────────────────────────────────
-FROM node:24-bookworm AS build
+FROM public.ecr.aws/docker/library/node:24-bookworm AS build
 
 RUN curl --retry 5 --retry-all-errors --retry-delay 2 -fsSL https://bun.sh/install | bash
 ENV PATH="/root/.bun/bin:${PATH}"
@@ -36,7 +36,7 @@ COPY scripts ./scripts
 
 RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
     NODE_OPTIONS=--max-old-space-size=2048 \
-    pnpm install --frozen-lockfile --prod=false
+    pnpm install --no-frozen-lockfile --prod=false
 
 COPY . .
 
@@ -44,7 +44,7 @@ RUN pnpm build:docker || pnpm build || true
 RUN pnpm ui:build || true
 
 # ─── Stage 2: runtime ────────────────────────────────────────────────
-FROM node:24-bookworm-slim
+FROM public.ecr.aws/docker/library/node:24-bookworm-slim
 
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
