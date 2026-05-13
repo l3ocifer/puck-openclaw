@@ -89,6 +89,36 @@
             input: ["text"],
             cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
             contextWindow: 4096,
+          },
+
+          // ─── Claude Max (via household claude-bridge) ──────────────
+          // Tier-6 budget share: 8% of weekly Claude pool. Puck is the
+          // creative agent; reserve the paid model for the moments
+          // where prose quality on user-facing output actually matters:
+          //   - finalizing a poem before Frack publishes
+          //   - long-form (10K+ word) draft of a blog/short story
+          //   - a one-off song/lyric that needs tight metric craft
+          // First/second drafts and ideation stay on `chat` / `frontier`.
+          // Bridge policy enforces both the 7-day quota and Puck's 8%
+          // share. On 429 LiteLLM cascades sonnet→chat→frontier,
+          // opus→frontier→long, so creative sessions never hard-fail.
+          {
+            id: "claude-sonnet-max",
+            name: "Claude Sonnet 4.6 via household Max subscription",
+            reasoning: true,
+            input: ["text"],
+            cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+            contextWindow: 200000,
+            maxTokens: 8192,
+          },
+          {
+            id: "claude-opus-max",
+            name: "Claude Opus 4.7 via household Max subscription",
+            reasoning: true,
+            input: ["text"],
+            cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+            contextWindow: 200000,
+            maxTokens: 8192,
           }
         ]
       }
