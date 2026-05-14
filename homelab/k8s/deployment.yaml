@@ -171,7 +171,7 @@ spec:
             - { name: openclaw-config, mountPath: /openclaw-config-src, readOnly: true }
       containers:
         - name: openclaw
-          image: ghcr.io/l3ocifer/puck-openclaw:a2a-native-20260513044400
+          image: git.leopaska.xyz/leo/puck-openclaw:homelab
           imagePullPolicy: Always
           command: ["node", "/opt/openclaw/openclaw.mjs"]
           args:
@@ -259,4 +259,4 @@ spec:
         - { name: graph-vimes,     persistentVolumeClaim: { claimName: vimes-graph } }
         - { name: graph-leo,       persistentVolumeClaim: { claimName: leo-graph } }
       imagePullSecrets:
-        - { name: ghcr-credentials }
+        - { name: forgejo-registry-credentials }
