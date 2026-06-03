@@ -46,7 +46,13 @@
             reasoning: false,
             input: ["text"],
             cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
-            contextWindow: 20480,
+            // True backend max_model_len is 24576 (vllm /v1/models). The old
+            // 20480 understated the window; with reserveTokens lowered to 6000
+            // below this frees ~14K of prompt budget (24576 - 6000 reserve -
+            // 4096 output) so long mission/a2a threads stop wedging the client
+            // precheck. Server-side context_window_fallbacks still escalate
+            // genuinely huge sessions to long-alef (262K).
+            contextWindow: 24576,
             maxTokens: 4096,
           },
           {
@@ -156,7 +162,16 @@
       // (AgentRuntimePolicySchema only accepts {id, fallback}). The
       // embedded harness now follows the main model.primary above.
       workspace: "/root/.openclaw/workspace",
-      compaction: { mode: "safeguard" },
+      // reserveTokens = compaction reserve-token floor (deployed schema key;
+      // NOTE: repo HEAD renamed this to `ln`, but the running image
+      // (OpenClaw 2026.5.12-beta.1 / pi-coding-agent 2026.4.30) only accepts
+      // `reserveTokens` — `ln` crash-loops the gateway with "Unrecognized key").
+      // The default (~20000, capped to 80% of the window) reserved most of
+      // chat's window, leaving too little prompt budget — long mission/a2a
+      // threads overflowed the client precheck (route=compact_only) and looped
+      // instead of running. 6000 reserves room for the 4096-token output +
+      // safety while freeing ~14K of prompt budget.
+      compaction: { mode: "safeguard", reserveTokens: 6000 },
       contextPruning: { mode: "cache-ttl", ttl: "2h" },
       maxConcurrent: 4,
       thinkingDefault: "low",
