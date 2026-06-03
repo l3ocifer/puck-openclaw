@@ -46,13 +46,22 @@
             reasoning: false,
             input: ["text"],
             cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
-            // True backend max_model_len is 24576 (vllm /v1/models). The old
-            // 20480 understated the window; with reserveTokens lowered to 6000
-            // below this frees ~14K of prompt budget (24576 - 6000 reserve -
-            // 4096 output) so long mission/a2a threads stop wedging the client
-            // precheck. Server-side context_window_fallbacks still escalate
-            // genuinely huge sessions to long-alef (262K).
-            contextWindow: 24576,
+            // The embedded harness precheck PINS its reserve at 16384 tokens
+            // (verified live 2026-06-03: precheck reserveTokens=16384 even with
+            // agents.defaults.compaction.reserveTokens=6000 loaded — that config
+            // key only feeds the projection/OpenClaw-compaction paths, NOT the
+            // embedded mid-turn precheck). With minPromptBudget=8000 the precheck
+            // computes promptBudget = contextWindow - min(16384, contextWindow-8000).
+            // At the old 24576 window that left only 8192 prompt budget, wedging
+            // multi-message a2a mission threads (~10-13K tokens) in an endless
+            // compact→truncate→retry loop. 32768 yields promptBudget=16384 (2x),
+            // which fits real mission threads. Backend stays safe: the harness
+            // caps output at maxTokens=4096, so a worst-case request is
+            // 16384 prompt + 4096 output = 20480 <= vllm-chat max_model_len 24576
+            // (no backend 400, no fallback needed for normal traffic). Server-side
+            // context_window_fallbacks still escalate genuinely huge sessions to
+            // long-alef (262K).
+            contextWindow: 32768,
             maxTokens: 4096,
           },
           {
