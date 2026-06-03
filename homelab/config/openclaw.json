@@ -265,8 +265,14 @@
     allow: ["read", "write", "edit", "exec", "web_search", "browser"],
     exec: {
       host: "gateway",
-      ask: "always",      // ask before every exec — Puck never silently runs
-      security: "allowlist", // schema enum: deny|allowlist|full
+      // Full fleet autonomy (operator decision 2026-06-03): mission agents run
+      // unattended in sandboxed K8s pods, so per-command approval prompts just
+      // wedge the turn (no interactive approver at the gateway UI). ask:"off"
+      // = never prompt (schema enum: off|on-miss|always). KILLSWITCH.md still
+      // gates external_post/external_email/github_push/github_pr_merge with an
+      // explicit :y, so destructive *external* actions remain confirmed.
+      ask: "off",
+      security: "full", // schema enum: deny|allowlist|full — allow any local command in-pod
       // NOTE: previous `allowedCommands` array was not in ToolExecBaseShape.
       // Allowlist enforcement now lives in the gateway-side runtime tool
       // policy (see scripts/agents/sancho-routines.md and confirm-list).
