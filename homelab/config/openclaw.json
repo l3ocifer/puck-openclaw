@@ -46,7 +46,13 @@
             reasoning: false,
             input: ["text"],
             cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
-            contextWindow: 20480,
+            // Real backend max_model_len is 24576 (vllm /v1/models). The old
+            // 20480 understated it; combined with the 20K reserve-floor default
+            // (capped to 80% of the window = 16384) it left only ~8K usable
+            // prompt, so any long mission/a2a thread wedged in a compact-retry
+            // loop with no escape. Use the true window; reserve floor lowered
+            // to 6000 below (see agents.defaults.compaction.ln).
+            contextWindow: 24576,
             maxTokens: 4096,
           },
           {
@@ -156,7 +162,14 @@
       // (AgentRuntimePolicySchema only accepts {id, fallback}). The
       // embedded harness now follows the main model.primary above.
       workspace: "/root/.openclaw/workspace",
-      compaction: { mode: "safeguard" },
+      // ln = compaction reserve-token floor. The harness default (20000,
+      // capped to 80% of the model window) reserved ~16K of chat's 24K window,
+      // leaving only ~8K for the prompt — so long mission/a2a threads overflowed
+      // the client precheck (route=compact_only) and looped instead of running.
+      // 6000 reserves ample room for chat's 4096-token output + safety while
+      // freeing ~18K of prompt budget. Server-side context_window_fallbacks in
+      // litellm-config still escalate genuinely huge sessions to long-alef.
+      compaction: { mode: "safeguard", ln: 6000 },
       contextPruning: { mode: "cache-ttl", ttl: "2h" },
       maxConcurrent: 4,
       thinkingDefault: "low",
