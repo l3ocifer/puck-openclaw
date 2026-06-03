@@ -171,7 +171,19 @@
       // threads overflowed the client precheck (route=compact_only) and looped
       // instead of running. 6000 reserves room for the 4096-token output +
       // safety while freeing ~14K of prompt budget.
-      compaction: { mode: "safeguard", reserveTokens: 6000 },
+      //
+      // reserveTokensFloor is REQUIRED for the floor to actually take: the
+      // embedded harness computes the projection reserve as
+      //   max(reserveTokens, reserveTokensFloor ?? DEFAULT_PROJECTION_RESERVE_TOKENS)
+      // where DEFAULT_PROJECTION_RESERVE_TOKENS=20000 (thread-lifecycle.js
+      // resolveCodexContextEngineProjectionReserveTokens). Without an explicit
+      // floor, reserveTokens:6000 was silently clamped UP to max(6000,20000)=
+      // 20000, then min()'d against the window down to 16384 — leaving only
+      // ~8K prompt budget and wedging multi-message a2a mission threads in an
+      // endless compact→truncate→retry loop (observed 2026-06-03 on puck).
+      // Setting the floor to 6000 makes the effective reserve 6000 (prompt
+      // budget ~18.5K of the 24576 window).
+      compaction: { mode: "safeguard", reserveTokens: 6000, reserveTokensFloor: 6000 },
       contextPruning: { mode: "cache-ttl", ttl: "2h" },
       maxConcurrent: 4,
       thinkingDefault: "low",
