@@ -12,5 +12,7 @@ spec:
     app.kubernetes.io/name: puck
   ports:
     - { name: gateway, port: 18789, targetPort: gateway, protocol: TCP }
-    - { name: metrics, port: 9100,  targetPort: metrics, protocol: TCP }
+    # OpenClaw serves /metrics on the gateway port — nothing binds 9100
+    # (homelab#47: TargetDown).
+    - { name: metrics, port: 9100,  targetPort: gateway, protocol: TCP }
     - { name: a2a, port: 8443, targetPort: gateway, protocol: TCP }
