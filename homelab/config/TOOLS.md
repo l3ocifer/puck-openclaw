@@ -22,29 +22,29 @@
 
 Puck calls models via LiteLLM (`http://litellm.litellm.svc:4000/v1`):
 
-| Alias | Use |
-|---|---|
-| `chat` | default conversational + drafting |
-| `code` | scripting/automation in skills |
-| `long` | book-length context (full manuscript review) |
-| `frontier` | careful prose work — limited budget |
-| `embed` | embeddings for portfolio search |
-| `tts` | text-to-speech (LiteLLM-routed; coqui or openai-tts behind it) |
-| `transcribe` | whisper for audio/video transcripts |
-| `image` | image gen (sdxl-vllm if unparked, else openai/dalle) |
+| Alias        | Use                                                            |
+| ------------ | -------------------------------------------------------------- |
+| `chat`       | default conversational + drafting                              |
+| `code`       | scripting/automation in skills                                 |
+| `long`       | book-length context (full manuscript review)                   |
+| `frontier`   | careful prose work — limited budget                            |
+| `embed`      | embeddings for portfolio search                                |
+| `tts`        | text-to-speech (LiteLLM-routed; coqui or openai-tts behind it) |
+| `transcribe` | whisper for audio/video transcripts                            |
+| `image`      | image gen (sdxl-vllm if unparked, else openai/dalle)           |
 
 Puck is the most model-diverse agent. Different work needs different
 tools.
 
 ## Communication channels
 
-| Channel | Use |
-|---|---|
-| Matrix `@puck:leopaska.xyz` | morning briefing, drafts to Leo, peer messages |
-| Telegram bot (shared) | quick "look at this" sends to Leo's phone (suppressed in quiet hours) |
-| ntfy `ntfy.leopaska.xyz/puck` | finished-piece notifications |
-| A2A — peer to all 6 siblings | Frack pulls ad copy, Sancho asks for poems, Vetinari requests metaphors |
-| HTTP API `:18789` | exposes `/portfolio/<id>`, `/draft/<id>`, `/render/<job>` |
+| Channel                       | Use                                                                     |
+| ----------------------------- | ----------------------------------------------------------------------- |
+| Matrix `@puck:leopaska.xyz`   | morning briefing, drafts to Leo, peer messages                          |
+| Telegram bot (shared)         | quick "look at this" sends to Leo's phone (suppressed in quiet hours)   |
+| ntfy `ntfy.leopaska.xyz/puck` | finished-piece notifications                                            |
+| A2A — peer to all 6 siblings  | Frack pulls ad copy, Sancho asks for poems, Vetinari requests metaphors |
+| HTTP API `:18789`             | exposes `/portfolio/<id>`, `/draft/<id>`, `/render/<job>`               |
 
 Puck does NOT have iMessage, Stripe, BlueBubbles, or Home Assistant
 access. Internal-facing — Frack publishes anything that goes outward.
@@ -60,10 +60,10 @@ access. Internal-facing — Frack publishes anything that goes outward.
 
 ## Postgres
 
-| Database | Access | Purpose |
-|---|---|---|
-| `openclaw_puck` (owner: `puck`) | RW | own session DB, portfolio metadata, draft history |
-| `ironclaw_frick`, `openclaw_frack`, `hermes_sancho`, `openfang_vetinari`, `hermes_quirm`, `ironclaw_vimes` | RO via `puck_ro` role | cross-agent context |
+| Database                                                                                                   | Access                | Purpose                                           |
+| ---------------------------------------------------------------------------------------------------------- | --------------------- | ------------------------------------------------- |
+| `openclaw_puck` (owner: `puck`)                                                                            | RW                    | own session DB, portfolio metadata, draft history |
+| `ironclaw_frick`, `openclaw_frack`, `hermes_sancho`, `openfang_vetinari`, `hermes_quirm`, `ironclaw_vimes` | RO via `puck_ro` role | cross-agent context                               |
 
 ## Kubernetes access
 
@@ -153,15 +153,49 @@ call `/search?format=json` directly.
 
 Provided by `puck-secrets` SealedSecret in `agents-shared`:
 
-| Var | Use |
-|---|---|
-| `LITELLM_API_KEY` | virtual key tagged `agent:puck` |
-| `DATABASE_URL` | `postgres://puck@homelab-pg-rw...` |
-| `PUCK_RO_PASSWORD` | psql for sibling DB introspection |
-| `MATRIX_HOMESERVER` + `MATRIX_ACCESS_TOKEN` | `@puck:leopaska.xyz` |
-| `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID_PUCK` | shared bot, dedicated chat |
-| `NTFY_TOKEN` | finished-piece notifications |
-| `OFP_SHARED_SECRET` | A2A mutual auth |
-| `BW_CLIENTID` + `BW_CLIENTSECRET` | Vaultwarden API-key login (own credentials only) for ad-hoc lookups via `bw get item` |
-| `MINIO_ACCESS_KEY` + `MINIO_SECRET_KEY` | archive bucket access |
-| `HEALTHCHECKS_UUID` | per-agent UUID for hc-ping.com heartbeats |
+| Var                                            | Use                                                                                   |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `LITELLM_API_KEY`                              | virtual key tagged `agent:puck`                                                       |
+| `DATABASE_URL`                                 | `postgres://puck@homelab-pg-rw...`                                                    |
+| `PUCK_RO_PASSWORD`                             | psql for sibling DB introspection                                                     |
+| `MATRIX_HOMESERVER` + `MATRIX_ACCESS_TOKEN`    | `@puck:leopaska.xyz`                                                                  |
+| `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID_PUCK` | shared bot, dedicated chat                                                            |
+| `NTFY_TOKEN`                                   | finished-piece notifications                                                          |
+| `OFP_SHARED_SECRET`                            | A2A mutual auth                                                                       |
+| `BW_CLIENTID` + `BW_CLIENTSECRET`              | Vaultwarden API-key login (own credentials only) for ad-hoc lookups via `bw get item` |
+| `MINIO_ACCESS_KEY` + `MINIO_SECRET_KEY`        | archive bucket access                                                                 |
+| `HEALTHCHECKS_UUID`                            | per-agent UUID for hc-ping.com heartbeats                                             |
+
+## Source control & GitOps (fleet convention)
+
+- **Forgejo — `https://git.leopaska.xyz` — is the source of truth** for
+  every repo: homelab, all agent repos, business apps. Clone/push via
+  `origin` (`git@git-ssh.leopaska.xyz` SSH or HTTPS).
+- **GitHub (`l3ocifer/*`) is a push-mirror backup only.** Never push,
+  open issues, or open PRs on GitHub — mirroring from Forgejo is
+  automatic and one-way.
+- **All deploys are GitOps via ArgoCD** (`argocd.leopaska.xyz`):
+  commit → push to Forgejo `main` (or PR) → CI builds the image →
+  ArgoCD (+ Image Updater) rolls it. Never `kubectl apply` desired
+  state by hand; self-heal reverts live edits. Manual
+  `rollout restart` is fine when config in git already changed.
+- **Issue intake:** Forgejo issues/comments are webhooked through
+  agent-bus to the routed agent's inbox (`pages/inbox/`) with a
+  `task_id: forgejo-<repo>-<n>`. Routing: `agent:<name>` label →
+  per-repo route → repo-name prefix → vetinari (triage default).
+- **Acting on issues:** use the Forgejo API with `$FORGEJO_TOKEN`
+  (in this agent's k8s Secret, scopes `write:issue,write:repository`):
+
+  ```bash
+  # comment your result
+  curl -s -X POST -H "Authorization: token $FORGEJO_TOKEN" \
+    -H 'Content-Type: application/json' -d '{"body":"<result>"}' \
+    https://git.leopaska.xyz/api/v1/repos/<owner>/<repo>/issues/<n>/comments
+  # close when resolved
+  curl -s -X PATCH -H "Authorization: token $FORGEJO_TOKEN" \
+    -H 'Content-Type: application/json' -d '{"state":"closed"}' \
+    https://git.leopaska.xyz/api/v1/repos/<owner>/<repo>/issues/<n>
+  ```
+
+- **File new work as Forgejo issues** (not GitHub, not ad-hoc notes)
+  so it routes through the same intake to the right agent.
