@@ -46,7 +46,22 @@
             reasoning: false,
             input: ["text"],
             cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
-            contextWindow: 20480,
+            // The embedded harness precheck PINS its reserve at 16384 tokens
+            // (verified live 2026-06-03: precheck reserveTokens=16384 even with
+            // agents.defaults.compaction.reserveTokens=6000 loaded — that config
+            // key only feeds the projection/OpenClaw-compaction paths, NOT the
+            // embedded mid-turn precheck). With minPromptBudget=8000 the precheck
+            // computes promptBudget = contextWindow - min(16384, contextWindow-8000).
+            // At the old 24576 window that left only 8192 prompt budget, wedging
+            // multi-message a2a mission threads (~10-13K tokens) in an endless
+            // compact→truncate→retry loop. 32768 yields promptBudget=16384 (2x),
+            // which fits real mission threads. Backend stays safe: the harness
+            // caps output at maxTokens=4096, so a worst-case request is
+            // 16384 prompt + 4096 output = 20480 <= vllm-chat max_model_len 24576
+            // (no backend 400, no fallback needed for normal traffic). Server-side
+            // context_window_fallbacks still escalate genuinely huge sessions to
+            // long-alef (262K).
+            contextWindow: 32768,
             maxTokens: 4096,
           },
           {
@@ -156,7 +171,28 @@
       // (AgentRuntimePolicySchema only accepts {id, fallback}). The
       // embedded harness now follows the main model.primary above.
       workspace: "/root/.openclaw/workspace",
-      compaction: { mode: "safeguard" },
+      // reserveTokens = compaction reserve-token floor (deployed schema key;
+      // NOTE: repo HEAD renamed this to `ln`, but the running image
+      // (OpenClaw 2026.5.12-beta.1 / pi-coding-agent 2026.4.30) only accepts
+      // `reserveTokens` — `ln` crash-loops the gateway with "Unrecognized key").
+      // The default (~20000, capped to 80% of the window) reserved most of
+      // chat's window, leaving too little prompt budget — long mission/a2a
+      // threads overflowed the client precheck (route=compact_only) and looped
+      // instead of running. 6000 reserves room for the 4096-token output +
+      // safety while freeing ~14K of prompt budget.
+      //
+      // reserveTokensFloor is REQUIRED for the floor to actually take: the
+      // embedded harness computes the projection reserve as
+      //   max(reserveTokens, reserveTokensFloor ?? DEFAULT_PROJECTION_RESERVE_TOKENS)
+      // where DEFAULT_PROJECTION_RESERVE_TOKENS=20000 (thread-lifecycle.js
+      // resolveCodexContextEngineProjectionReserveTokens). Without an explicit
+      // floor, reserveTokens:6000 was silently clamped UP to max(6000,20000)=
+      // 20000, then min()'d against the window down to 16384 — leaving only
+      // ~8K prompt budget and wedging multi-message a2a mission threads in an
+      // endless compact→truncate→retry loop (observed 2026-06-03 on puck).
+      // Setting the floor to 6000 makes the effective reserve 6000 (prompt
+      // budget ~18.5K of the 24576 window).
+      compaction: { mode: "safeguard", reserveTokens: 6000, reserveTokensFloor: 6000 },
       contextPruning: { mode: "cache-ttl", ttl: "2h" },
       maxConcurrent: 4,
       thinkingDefault: "low",
@@ -229,8 +265,14 @@
     allow: ["read", "write", "edit", "exec", "web_search", "browser"],
     exec: {
       host: "gateway",
-      ask: "always",      // ask before every exec — Puck never silently runs
-      security: "allowlist", // schema enum: deny|allowlist|full
+      // Full fleet autonomy (operator decision 2026-06-03): mission agents run
+      // unattended in sandboxed K8s pods, so per-command approval prompts just
+      // wedge the turn (no interactive approver at the gateway UI). ask:"off"
+      // = never prompt (schema enum: off|on-miss|always). KILLSWITCH.md still
+      // gates external_post/external_email/github_push/github_pr_merge with an
+      // explicit :y, so destructive *external* actions remain confirmed.
+      ask: "off",
+      security: "full", // schema enum: deny|allowlist|full — allow any local command in-pod
       // NOTE: previous `allowedCommands` array was not in ToolExecBaseShape.
       // Allowlist enforcement now lives in the gateway-side runtime tool
       // policy (see scripts/agents/sancho-routines.md and confirm-list).
@@ -253,7 +295,10 @@
   gateway: {
     mode: "local",  // schema enum: local|remote — pod foreground == "local"
     port: 18789,
-    bind: "0.0.0.0",
+    // Upstream OpenClaw tightened the schema (2026-05): bind must be one of
+    // auto|lan|loopback|custom|tailnet. `lan` binds 0.0.0.0 on cluster-internal
+    // interfaces, which is what the Service in front of us expects.
+    bind: "lan",
   },
 
   // NOTE: channels block omitted; plugins auto-discover from env vars.
