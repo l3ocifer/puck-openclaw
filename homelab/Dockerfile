@@ -36,7 +36,7 @@ COPY scripts ./scripts
 
 RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
     NODE_OPTIONS=--max-old-space-size=2048 \
-    pnpm install --no-frozen-lockfile --prod=false
+    pnpm install --frozen-lockfile --prod=false
 
 COPY . .
 
