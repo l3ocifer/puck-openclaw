@@ -29,19 +29,7 @@ spec:
   issuerRef:
     name: letsencrypt-prod
     kind: ClusterIssuer
----
-apiVersion: monitoring.coreos.com/v1
-kind: ServiceMonitor
-metadata:
-  name: puck-metrics
-  namespace: agents-shared
-  labels:
-    release: kube-prometheus-stack
-spec:
-  selector:
-    matchLabels:
-      app.kubernetes.io/name: puck
-  endpoints:
-    - port: metrics
-      interval: 30s
-      path: /metrics
+# ServiceMonitor removed (homelab#47): this OpenClaw build exposes no
+# Prometheus /metrics endpoint (the gateway answers with the control-UI
+# SPA), so the scrape target was permanently down and TargetDown fired
+# forever. Re-add together with a real exporter.
