@@ -228,7 +228,6 @@
         },
         store: {
           driver: "sqlite",
-          path: "/root/.openclaw/workspace-rw/memory/index.sqlite",
           vector: { enabled: true },
         },
         sync: {
