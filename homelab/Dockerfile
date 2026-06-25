@@ -1,4 +1,10 @@
 # puck-openclaw/homelab/Dockerfile
+# rebuild-trigger: 2026-06-25 — roll a current :homelab image. The deployed
+# image is 10d stale (no push since the #21 upstream sync); it carries the
+# heartbeat-template-missing bug and the pre-fix a2a path, so dispatched
+# missions never execute (proven live: the verify mission sat unprocessed in
+# inbox/). Repo HEAD already has the template packaging + handleA2aRequest
+# fixes; this bump touches a build-trigger path to force a fresh build.
 #
 # Builds the OpenClaw image for **Puck**, Leo's creative agent —
 # province: poems, books, videos, music. The build context is the

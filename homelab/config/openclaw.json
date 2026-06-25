@@ -61,7 +61,14 @@
             // (no backend 400, no fallback needed for normal traffic). Server-side
             // context_window_fallbacks still escalate genuinely huge sessions to
             // long-alef (262K).
-            contextWindow: 32768,
+            // 2026-06-25: raised 32768->40000 for parity with frack. The embedded
+            // harness mid-turn precheck pins reserve at 16384 (from settings.json,
+            // not openclaw.json), so 32768 left only 16384 prompt budget — the
+            // persona+tools base prompt overflows it and EVERY turn fails the
+            // precheck ("Context overflow ... (precheck)") before reaching the
+            // model. 40000 yields budget 23616; worst-case request
+            // (40000-16384)/1.2 + 4096 = 23776 stays under vllm-chat 24576.
+            contextWindow: 40000,
             maxTokens: 4096,
           },
           {
