@@ -282,7 +282,11 @@
   tools: {
     profile: "full",  // schema enum: minimal|coding|messaging|full. Puck does
                        // wide-surface creative work; "full" is the closest fit.
-    allow: ["read", "write", "edit", "exec", "web_search", "browser"],
+    // "bundle-mcp" keeps the federated MCP tools from the central gateway
+    // (OpenClaw's tool-policy otherwise strips them since they're not a
+    // built-in category). Without it the gateway connects but its tools
+    // are removed from the runtime.
+    allow: ["read", "write", "edit", "exec", "web_search", "browser", "bundle-mcp"],
     exec: {
       host: "gateway",
       // Full fleet autonomy (operator decision 2026-06-03): mission agents run
