@@ -265,6 +265,20 @@
     ],
   },
 
+  // Central MCP gateway (ContextForge) — one endpoint merging all shared
+  // backends (k8s/postgres read-only, grafana, forgejo, home-assistant).
+  // Puck had no MCP tooling before; it now gets the universal fleet
+  // surface. Add/update servers centrally in
+  // homelab/argocd/apps/_mcp/70-mcp-gateway.yaml.
+  mcp: {
+    servers: {
+      gateway: {
+        url: "http://mcp-gateway.mcp.svc.cluster.local:8080/sse",
+        transport: "sse",
+      },
+    },
+  },
+
   tools: {
     profile: "full",  // schema enum: minimal|coding|messaging|full. Puck does
                        // wide-surface creative work; "full" is the closest fit.
