@@ -1,4 +1,6 @@
 export * from "./clawhub-trust-error-details.js";
+export { readMissingScopeError, readMissingScopeErrorDetails } from "./gateway-error-details.js";
+export * from "./session-icon.js";
 export * from "./terminal-validators.js";
 export {
   validateApprovalGetResult,
@@ -12,9 +14,16 @@ export type { ProtocolValidator } from "./protocol-validator.js";
 export * from "./schema/worker-inference.js";
 export * from "./schema/skill-history.js";
 export * from "./schema/ui-command.js";
+export type { GatewayErrorDetails, MissingScopeErrorDetails } from "./schema/error-codes.js";
+export * from "./schema/board.js";
 export * from "./migration-api.js";
 export type * from "./public-session-catalog.js";
 import {
+  BoardEventParamsSchema,
+  BoardGetParamsSchema,
+  BoardUpdateParamsSchema,
+  BoardWidgetGrantParamsSchema,
+  BoardWidgetPutParamsSchema,
   AgentEventSchema,
   AuditActivityAgentRunV1Schema,
   AuditActivityEventV1Schema,
@@ -27,6 +36,17 @@ import {
   AuditEventSchema,
   AuditListParamsSchema,
   AuditListResultSchema,
+  UserProfileSchema,
+  UsersLinkEmailParamsSchema,
+  UsersLinkEmailResultSchema,
+  UsersListParamsSchema,
+  UsersListResultSchema,
+  UsersSelfParamsSchema,
+  UsersSelfResultSchema,
+  UsersSetAvatarParamsSchema,
+  UsersSetAvatarResultSchema,
+  UsersSetDisplayNameParamsSchema,
+  UsersSetDisplayNameResultSchema,
   AgentIdentityParamsSchema,
   AgentIdentityResultSchema,
   AgentParamsSchema,
@@ -58,6 +78,9 @@ import {
   AgentsListParamsSchema,
   AgentsListResultSchema,
   AgentWaitParamsSchema,
+  ConversationListItemSchema,
+  ConversationListParamsSchema,
+  ConversationListResultSchema,
   ConversationSendParamsSchema,
   ConversationSendResultSchema,
   ConversationTurnCancelParamsSchema,
@@ -73,10 +96,13 @@ import {
   TalkCatalogResultSchema,
   TalkClientCreateParamsSchema,
   TalkClientCreateResultSchema,
+  TalkClientCloseParamsSchema,
+  TalkClientMutationResultSchema,
   TalkAgentControlResultSchema,
   TalkClientSteerParamsSchema,
   TalkClientToolCallParamsSchema,
   TalkClientToolCallResultSchema,
+  TalkClientTranscriptParamsSchema,
   TalkConfigParamsSchema,
   TalkConfigResultSchema,
   TalkSessionAppendAudioParamsSchema,
@@ -184,6 +210,24 @@ import {
   ExecApprovalGetParamsSchema,
   ExecApprovalRequestParamsSchema,
   ExecApprovalResolveParamsSchema,
+  QuestionAnswersSchema,
+  QuestionGetParamsSchema,
+  QuestionGetResultSchema,
+  QuestionListParamsSchema,
+  QuestionListResultSchema,
+  QuestionOptionSchema,
+  QuestionRecordSchema,
+  QuestionRequestedEventSchema,
+  QuestionRequestParamsSchema,
+  QuestionRequestQuestionSchema,
+  QuestionRequestResultSchema,
+  QuestionResolvedEventSchema,
+  QuestionResolveParamsSchema,
+  QuestionResolveResultSchema,
+  QuestionSchema,
+  QuestionStatusSchema,
+  QuestionWaitAnswerParamsSchema,
+  QuestionWaitAnswerResultSchema,
   PluginApprovalRequestParamsSchema,
   PluginApprovalResolveParamsSchema,
   PluginCatalogEntrySchema,
@@ -207,6 +251,10 @@ import {
   PluginsUninstallParamsSchema,
   PluginsUninstallResultSchema,
   ErrorCodes,
+  buildMissingScopeErrorDetails,
+  GatewayErrorDetailCodes,
+  GatewayErrorDetailsSchema,
+  MissingScopeErrorDetailsSchema,
   EnvironmentSummarySchema,
   EnvironmentsCreateParamsSchema,
   EnvironmentsCreateResultSchema,
@@ -262,6 +310,7 @@ import {
   ErrorShapeSchema,
   EventFrameSchema,
   errorShape,
+  missingScopeErrorShape,
   GatewayFrameSchema,
   GATEWAY_SERVER_CAPS,
   HelloOkSchema,
@@ -336,6 +385,7 @@ import {
   SendParamsSchema,
   SecretsResolveParamsSchema,
   SecretsResolveResultSchema,
+  SessionBranchSchema,
   SessionsAbortParamsSchema,
   SessionsCompactParamsSchema,
   SessionsCleanupParamsSchema,
@@ -343,6 +393,14 @@ import {
   SessionsCompactionGetParamsSchema,
   SessionsCompactionListParamsSchema,
   SessionsCompactionRestoreParamsSchema,
+  SessionsBranchesListParamsSchema,
+  SessionsBranchesListResultSchema,
+  SessionsBranchesSwitchParamsSchema,
+  SessionsBranchesSwitchResultSchema,
+  SessionsForkParamsSchema,
+  SessionsForkResultSchema,
+  SessionsRewindParamsSchema,
+  SessionsRewindResultSchema,
   SessionFileBrowserEntrySchema,
   SessionFileBrowserResultSchema,
   SessionFileEntrySchema,
@@ -392,6 +450,7 @@ import {
   SessionsCatalogContinueResultSchema,
   SessionsCatalogListParamsSchema,
   SessionsCatalogListResultSchema,
+  SessionsCatalogHostEventSchema,
   SessionsCatalogReadParamsSchema,
   SessionsCatalogReadResultSchema,
   SessionsMessagesSubscribeParamsSchema,
@@ -468,6 +527,7 @@ import {
   WebLoginStartParamsSchema,
   WebLoginWaitParamsSchema,
   SystemAgentChatParamsSchema,
+  SystemAgentChatQuestionSchema,
   SystemAgentChatResultSchema,
   SystemAgentSetupDetectParamsSchema,
   SystemAgentSetupDetectResultSchema,
@@ -573,6 +633,8 @@ export const validateResponseFrame = lazyCompile(ResponseFrameSchema);
 export const validateEventFrame = lazyCompile(EventFrameSchema);
 export const validateMessageActionParams = lazyCompile(MessageActionParamsSchema);
 export const validateSendParams = lazyCompile(SendParamsSchema);
+export const validateConversationListParams = lazyCompile(ConversationListParamsSchema);
+export const validateConversationListResult = lazyCompile(ConversationListResultSchema);
 export const validateConversationSendParams = lazyCompile(ConversationSendParamsSchema);
 export const validateConversationSendResult = lazyCompile(ConversationSendResultSchema);
 export const validateConversationTurnCancelParams = lazyCompile(ConversationTurnCancelParamsSchema);
@@ -584,11 +646,25 @@ export const validateAuditActivityListParams = lazyCompile<AuditActivityListPara
   AuditActivityListParamsSchema,
 );
 export const validateAuditListParams = lazyCompile(AuditListParamsSchema);
+export const validateUsersListParams = lazyCompile(UsersListParamsSchema);
+export const validateUsersSelfParams = lazyCompile(UsersSelfParamsSchema);
+export const validateUsersSelfResult = lazyCompile(UsersSelfResultSchema);
+export const validateUsersLinkEmailParams = lazyCompile(UsersLinkEmailParamsSchema);
+export const validateUsersLinkEmailResult = lazyCompile(UsersLinkEmailResultSchema);
+export const validateUsersSetDisplayNameParams = lazyCompile(UsersSetDisplayNameParamsSchema);
+export const validateUsersSetDisplayNameResult = lazyCompile(UsersSetDisplayNameResultSchema);
+export const validateUsersSetAvatarParams = lazyCompile(UsersSetAvatarParamsSchema);
+export const validateUsersSetAvatarResult = lazyCompile(UsersSetAvatarResultSchema);
 export const validateAgentIdentityParams = lazyCompile(AgentIdentityParamsSchema);
 export const validateAgentWaitParams = lazyCompile(AgentWaitParamsSchema);
 export const validateWakeParams = lazyCompile(WakeParamsSchema);
 export const validateAgentsListParams = lazyCompile(AgentsListParamsSchema);
 export const validateWorktreesListParams = lazyCompile(WorktreesListParamsSchema);
+export const validateBoardGetParams = lazyCompile(BoardGetParamsSchema);
+export const validateBoardUpdateParams = lazyCompile(BoardUpdateParamsSchema);
+export const validateBoardWidgetPutParams = lazyCompile(BoardWidgetPutParamsSchema);
+export const validateBoardWidgetGrantParams = lazyCompile(BoardWidgetGrantParamsSchema);
+export const validateBoardEventParams = lazyCompile(BoardEventParamsSchema);
 export const validateWorktreesCreateParams = lazyCompile(WorktreesCreateParamsSchema);
 export const validateWorktreesRemoveParams = lazyCompile(WorktreesRemoveParamsSchema);
 export const validateWorktreesRestoreParams = lazyCompile(WorktreesRestoreParamsSchema);
@@ -648,6 +724,7 @@ export const validateSecretsResolveParams = lazyCompile(SecretsResolveParamsSche
 export const validateSecretsResolveResult = lazyCompile(SecretsResolveResultSchema);
 export const validateSessionsListParams = lazyCompile(SessionsListParamsSchema);
 export const validateSessionsCatalogListParams = lazyCompile(SessionsCatalogListParamsSchema);
+export const validateSessionsCatalogHostEvent = lazyCompile(SessionsCatalogHostEventSchema);
 export const validateSessionsCatalogReadParams = lazyCompile(SessionsCatalogReadParamsSchema);
 export const validateSessionsCatalogContinueParams = lazyCompile(
   SessionsCatalogContinueParamsSchema,
@@ -694,6 +771,10 @@ export const validateSessionsCompactionBranchParams = lazyCompile(
 export const validateSessionsCompactionRestoreParams = lazyCompile(
   SessionsCompactionRestoreParamsSchema,
 );
+export const validateSessionsBranchesListParams = lazyCompile(SessionsBranchesListParamsSchema);
+export const validateSessionsBranchesSwitchParams = lazyCompile(SessionsBranchesSwitchParamsSchema);
+export const validateSessionsRewindParams = lazyCompile(SessionsRewindParamsSchema);
+export const validateSessionsForkParams = lazyCompile(SessionsForkParamsSchema);
 export const validateSessionsUsageParams = lazyCompile(SessionsUsageParamsSchema);
 export const validateTaskSuggestionsListParams = lazyCompile(TaskSuggestionsListParamsSchema);
 export const validateTaskSuggestionsCreateParams = lazyCompile(TaskSuggestionsCreateParamsSchema);
@@ -730,8 +811,11 @@ export const validateTalkConfigParams = lazyCompile(TalkConfigParamsSchema);
 export const validateTalkConfigResult = lazyCompile(TalkConfigResultSchema);
 export const validateTalkClientCreateParams = lazyCompile(TalkClientCreateParamsSchema);
 export const validateTalkClientCreateResult = lazyCompile(TalkClientCreateResultSchema);
+export const validateTalkClientCloseParams = lazyCompile(TalkClientCloseParamsSchema);
+export const validateTalkClientMutationResult = lazyCompile(TalkClientMutationResultSchema);
 export const validateTalkClientToolCallParams = lazyCompile(TalkClientToolCallParamsSchema);
 export const validateTalkClientToolCallResult = lazyCompile(TalkClientToolCallResultSchema);
+export const validateTalkClientTranscriptParams = lazyCompile(TalkClientTranscriptParamsSchema);
 export const validateTalkClientSteerParams = lazyCompile(TalkClientSteerParamsSchema);
 export const validateTalkAgentControlResult = lazyCompile(TalkAgentControlResultSchema);
 export const validateTalkSessionCreateParams = lazyCompile(TalkSessionCreateParamsSchema);
@@ -827,6 +911,18 @@ export const validateExecApprovalsSetParams = lazyCompile(ExecApprovalsSetParams
 export const validateExecApprovalGetParams = lazyCompile(ExecApprovalGetParamsSchema);
 export const validateExecApprovalRequestParams = lazyCompile(ExecApprovalRequestParamsSchema);
 export const validateExecApprovalResolveParams = lazyCompile(ExecApprovalResolveParamsSchema);
+export const validateQuestionRequestParams = lazyCompile(QuestionRequestParamsSchema);
+export const validateQuestionRequestResult = lazyCompile(QuestionRequestResultSchema);
+export const validateQuestionWaitAnswerParams = lazyCompile(QuestionWaitAnswerParamsSchema);
+export const validateQuestionWaitAnswerResult = lazyCompile(QuestionWaitAnswerResultSchema);
+export const validateQuestionResolveParams = lazyCompile(QuestionResolveParamsSchema);
+export const validateQuestionResolveResult = lazyCompile(QuestionResolveResultSchema);
+export const validateQuestionGetParams = lazyCompile(QuestionGetParamsSchema);
+export const validateQuestionGetResult = lazyCompile(QuestionGetResultSchema);
+export const validateQuestionListParams = lazyCompile(QuestionListParamsSchema);
+export const validateQuestionListResult = lazyCompile(QuestionListResultSchema);
+export const validateQuestionRequestedEvent = lazyCompile(QuestionRequestedEventSchema);
+export const validateQuestionResolvedEvent = lazyCompile(QuestionResolvedEventSchema);
 export const validatePluginApprovalRequestParams = lazyCompile(PluginApprovalRequestParamsSchema);
 export const validatePluginApprovalResolveParams = lazyCompile(PluginApprovalResolveParamsSchema);
 export const validatePluginsListParams = lazyCompile(PluginsListParamsSchema);
@@ -890,6 +986,8 @@ export {
   PresenceEntrySchema,
   SnapshotSchema,
   ErrorShapeSchema,
+  GatewayErrorDetailsSchema,
+  MissingScopeErrorDetailsSchema,
   WorkerAdmissionFailureReasonSchema,
   WorkerAdmissionHandshakeSchema,
   WorkerAdmissionResponseFrameSchema,
@@ -944,6 +1042,9 @@ export {
   SystemInfoResultSchema,
   StateVersionSchema,
   AgentEventSchema,
+  ConversationListItemSchema,
+  ConversationListParamsSchema,
+  ConversationListResultSchema,
   ConversationSendParamsSchema,
   ConversationSendResultSchema,
   ConversationTurnCancelParamsSchema,
@@ -995,6 +1096,7 @@ export {
   SessionCatalogTranscriptItemSchema,
   SessionsCatalogListParamsSchema,
   SessionsCatalogListResultSchema,
+  SessionsCatalogHostEventSchema,
   SessionsCatalogReadParamsSchema,
   SessionsCatalogReadResultSchema,
   SessionsCatalogContinueParamsSchema,
@@ -1029,6 +1131,15 @@ export {
   SessionsCompactionGetParamsSchema,
   SessionsCompactionBranchParamsSchema,
   SessionsCompactionRestoreParamsSchema,
+  SessionBranchSchema,
+  SessionsBranchesListParamsSchema,
+  SessionsBranchesListResultSchema,
+  SessionsBranchesSwitchParamsSchema,
+  SessionsBranchesSwitchResultSchema,
+  SessionsForkParamsSchema,
+  SessionsForkResultSchema,
+  SessionsRewindParamsSchema,
+  SessionsRewindResultSchema,
   SessionPlacementStateSchema,
   SessionPlacementSchema,
   SessionWorktreeInfoSchema,
@@ -1067,6 +1178,17 @@ export {
   AuditEventSchema,
   AuditListParamsSchema,
   AuditListResultSchema,
+  UserProfileSchema,
+  UsersLinkEmailParamsSchema,
+  UsersLinkEmailResultSchema,
+  UsersListParamsSchema,
+  UsersListResultSchema,
+  UsersSelfParamsSchema,
+  UsersSelfResultSchema,
+  UsersSetAvatarParamsSchema,
+  UsersSetAvatarResultSchema,
+  UsersSetDisplayNameParamsSchema,
+  UsersSetDisplayNameResultSchema,
   TaskSuggestionSchema,
   TaskSuggestionEventSchema,
   TaskSuggestionResolutionSchema,
@@ -1095,6 +1217,7 @@ export {
   ConfigSchemaLookupResultSchema,
   UpdateStatusParamsSchema,
   SystemAgentChatParamsSchema,
+  SystemAgentChatQuestionSchema,
   SystemAgentChatResultSchema,
   SystemAgentSetupDetectParamsSchema,
   SystemAgentSetupDetectResultSchema,
@@ -1117,10 +1240,13 @@ export {
   TalkCatalogResultSchema,
   TalkClientCreateParamsSchema,
   TalkClientCreateResultSchema,
+  TalkClientCloseParamsSchema,
+  TalkClientMutationResultSchema,
   TalkAgentControlResultSchema,
   TalkClientSteerParamsSchema,
   TalkClientToolCallParamsSchema,
   TalkClientToolCallResultSchema,
+  TalkClientTranscriptParamsSchema,
   TalkConfigParamsSchema,
   TalkConfigResultSchema,
   TalkSessionAppendAudioParamsSchema,
@@ -1289,6 +1415,24 @@ export {
   ExecApprovalGetParamsSchema,
   ExecApprovalRequestParamsSchema,
   ExecApprovalResolveParamsSchema,
+  QuestionAnswersSchema,
+  QuestionGetParamsSchema,
+  QuestionGetResultSchema,
+  QuestionListParamsSchema,
+  QuestionListResultSchema,
+  QuestionOptionSchema,
+  QuestionRecordSchema,
+  QuestionRequestedEventSchema,
+  QuestionRequestParamsSchema,
+  QuestionRequestQuestionSchema,
+  QuestionRequestResultSchema,
+  QuestionResolvedEventSchema,
+  QuestionResolveParamsSchema,
+  QuestionResolveResultSchema,
+  QuestionSchema,
+  QuestionStatusSchema,
+  QuestionWaitAnswerParamsSchema,
+  QuestionWaitAnswerResultSchema,
   ChatHistoryParamsSchema,
   ChatMetadataParamsSchema,
   ChatSendParamsSchema,
@@ -1318,7 +1462,10 @@ export {
   MIN_PROBE_PROTOCOL_VERSION,
   PROTOCOL_VERSION,
   ErrorCodes,
+  buildMissingScopeErrorDetails,
+  GatewayErrorDetailCodes,
   errorShape,
+  missingScopeErrorShape,
 };
 
 // Type exports mirror the schema exports for downstream TypeScript consumers.
@@ -1368,6 +1515,9 @@ export type {
   ErrorShape,
   StateVersion,
   AgentEvent,
+  ConversationListItem,
+  ConversationListParams,
+  ConversationListResult,
   ConversationSendParams,
   ConversationSendResult,
   ConversationTurnCancelParams,
@@ -1397,6 +1547,7 @@ export type {
   ConfigSchemaParams,
   ConfigSchemaResponse,
   SystemAgentChatParams,
+  SystemAgentChatQuestion,
   SystemAgentChatResult,
   SystemAgentSetupDetectParams,
   SystemAgentSetupDetectResult,
@@ -1418,10 +1569,13 @@ export type {
   TalkCatalogResult,
   TalkClientCreateParams,
   TalkClientCreateResult,
+  TalkClientCloseParams,
+  TalkClientMutationResult,
   TalkClientSteerParams,
   TalkAgentControlResult,
   TalkClientToolCallParams,
   TalkClientToolCallResult,
+  TalkClientTranscriptParams,
   TalkConfigParams,
   TalkConfigResult,
   TalkSessionAppendAudioParams,
@@ -1611,6 +1765,15 @@ export type {
   SessionsReclaimParams,
   SessionsReclaimResult,
   SessionsCreateResult,
+  SessionBranch,
+  SessionsBranchesListParams,
+  SessionsBranchesListResult,
+  SessionsBranchesSwitchParams,
+  SessionsBranchesSwitchResult,
+  SessionsForkParams,
+  SessionsForkResult,
+  SessionsRewindParams,
+  SessionsRewindResult,
   SessionsPatchParams,
   SessionsResetParams,
   SessionsDeleteParams,
@@ -1626,6 +1789,17 @@ export type {
   AuditEvent,
   AuditListParams,
   AuditListResult,
+  UserProfile,
+  UsersLinkEmailParams,
+  UsersLinkEmailResult,
+  UsersListParams,
+  UsersListResult,
+  UsersSelfParams,
+  UsersSelfResult,
+  UsersSetAvatarParams,
+  UsersSetAvatarResult,
+  UsersSetDisplayNameParams,
+  UsersSetDisplayNameResult,
   TaskSuggestion,
   TaskSuggestionEvent,
   TaskSuggestionResolution,
@@ -1686,6 +1860,24 @@ export type {
   ExecApprovalGetParams,
   ExecApprovalRequestParams,
   ExecApprovalResolveParams,
+  Question,
+  QuestionAnswers,
+  QuestionGetParams,
+  QuestionGetResult,
+  QuestionListParams,
+  QuestionListResult,
+  QuestionOption,
+  QuestionRecord,
+  QuestionRequestedEvent,
+  QuestionRequestParams,
+  QuestionRequestQuestion,
+  QuestionRequestResult,
+  QuestionResolvedEvent,
+  QuestionResolveParams,
+  QuestionResolveResult,
+  QuestionStatus,
+  QuestionWaitAnswerParams,
+  QuestionWaitAnswerResult,
   LogsTailParams,
   LogsTailResult,
   TerminalOpenParams,
