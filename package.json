@@ -1983,7 +1983,7 @@
     "lit-analyzer": "2.0.3",
     "oxfmt": "0.60.0",
     "oxlint": "1.74.0",
-    "oxlint-tsgolint": "0.25.0",
+    "oxlint-tsgolint": "7.0.2001",
     "playwright": "1.61.1",
     "postcss-lit": "1.4.1",
     "shiki": "4.3.1",
