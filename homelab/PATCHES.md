@@ -31,5 +31,45 @@ Track non-additive changes (anything outside `homelab/`).
   answers 503 while the gateway is still starting, instead of capturing a
   local that only exists late in startup.
 
+### homelab-config-validator: pre-push schema check for openclaw.json
+
+- **Files**: `homelab/scripts/validate-config.mts` (additive, inside `homelab/`
+  — listed here for discoverability, not because it conflicts).
+- **Reason**: the gateway validates its config against a _strict_ zod schema and
+  exits non-zero on an unknown key, so a key upstream renames or retires becomes
+  a CrashLoopBackOff that only shows up after the image builds and rolls. Run it
+  after every upstream merge and before pushing.
+- **Run**: `./node_modules/.bin/tsx homelab/scripts/validate-config.mts`
+
+## Config schema migrations (homelab/config/openclaw.json)
+
+Not source patches, but the same upstream-drift hazard, and the reason the
+validator above exists.
+
+### 2026-07-26 (upstream@dfcd3b9e0b0)
+
+The sync to this upstream crash-looped the gateway 7 times with
+`Invalid config … Unrecognized keys`. Three changes were needed:
+
+- `agents.defaults.compaction.reserveTokens` / `reserveTokensFloor` — **removed,
+  no replacement.** These were the 2026-06-03 workaround for a projection
+  reserve that defaulted to ~20K and starved prompt budget on chat's 24576
+  window, wedging long a2a mission threads in a compact→truncate→retry loop.
+  Upstream deleted that mechanism entirely (no `DEFAULT_PROJECTION_RESERVE_TOKENS`
+  remains in the tree) and both keys are now on the retired-knob list that
+  `openclaw doctor --fix` strips. The reserve is computed internally; if
+  starvation returns, `compaction.keepRecentTokens` is the modern lever.
+- `agents.defaults.memorySearch` → **root `memory.search`.** The owner moved to
+  the root (per-agent overrides now live at `agents.entries.<id>.memory.search`;
+  `agents.defaults` does not accept it at all). Three sub-blocks are gone with no
+  replacement and were dropped rather than translated: `store.driver` (sqlite is
+  the only driver), the whole `sync` block (watch / debounce / onSessionStart /
+  onSearch are no longer configurable — indexing is driven internally), and
+  `query.hybrid` (hybrid retrieval is always on; `query` now takes only
+  `maxResults` and `minScore`).
+- `agents.list[]` → `agents.entries{}`. The array form still loads via a doctor
+  migration, so this one was not fatal; written canonically anyway so the seeded
+  ConfigMap does not need a migration pass on every boot.
+
 Puck's own work — finished pieces, drafts, methodology notes — lives
 in `puck-graph/pages/`, not in source code.
