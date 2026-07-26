@@ -71,5 +71,84 @@ The sync to this upstream crash-looped the gateway 7 times with
   migration, so this one was not fatal; written canonically anyway so the seeded
   ConfigMap does not need a migration pass on every boot.
 
+Separately, `memory.search.provider` was `"remote"` — not fatal, and not even a
+schema error, because `provider` is a free-form string. But `"remote"` is not an
+embedding-provider _id_, so it resolved to nothing and the gateway logged
+"no loaded plugin registered a memory embedding provider that can serve
+'remote'. Semantic memory recall will fall back to keyword/FTS-only search" —
+embeddings had been silently off. The correct id is `openai-compatible` (the
+core adapter, registered unconditionally rather than plugin-gated); it prefers
+the explicit `remote` block over any `models.providers` entry, so LiteLLM stays
+the embedding endpoint. **The validator cannot catch this class of bug** — grep
+the gateway's first 30 log lines for warnings after any sync.
+
+## Upstream sync runbook: persisted state migrations
+
+Config is not the only thing that drifts. The state PVC outlives every image, so
+an upstream release that bumps a database schema will refuse to boot:
+
+```
+Gateway failed to start: OpenClaw agent database
+/root/.openclaw/agents/main/agent/openclaw-agent.sqlite uses schema version 11;
+run openclaw doctor --fix to migrate persisted media before using it.
+```
+
+There is no scoped migration flag — `openclaw doctor --fix` is the only path,
+it takes ~2 minutes, and it rewrites the runtime config copy (stripping JSON5
+comments, which is harmless: the ConfigMap in this repo is the source of truth).
+It is deliberately NOT wired into an init container, because it would add two
+minutes and a config rewrite to every pod restart in exchange for a fault that
+only occurs on an upstream schema bump.
+
+Because the crash-looping pod cannot be exec'd into, run it against a paused
+copy of the pod, which mounts the same PVC on the same node:
+
+```sh
+POD=$(kubectl get pods -n agents-shared -l app.kubernetes.io/name=puck -o name | head -1 | cut -d/ -f2)
+kubectl debug -n agents-shared "$POD" --copy-to=puck-migrate --container=openclaw -- sh -c 'sleep 3600'
+kubectl exec -n agents-shared puck-migrate -c openclaw -- node /opt/openclaw/openclaw.mjs doctor --fix
+kubectl delete pod -n agents-shared puck-migrate
+kubectl delete pod -n agents-shared "$POD"   # fresh pod re-seeds and starts clean
+```
+
+### The re-seed trap: a ConfigMap change that never reaches the gateway
+
+The seed init container compares the ConfigMap's sha256 against a marker file at
+`/root/.openclaw/runtime-config/.configmap-source.sha256`. It never compares the
+ConfigMap against the _runtime copy itself_. Normally that is fine and desirable
+— it is what lets doctor's rewrite survive a restart. It fails when the gateway
+rewrites the runtime copy in the same boot in which it was seeded, which it does
+whenever it normalises the config (you can see it happen: it preserves the file
+it overwrote as `openclaw.json.clobbered.<timestamp>` and the previous accepted
+one as `openclaw.json.last-good`). After that the marker matches the ConfigMap
+while the file on disk does not, and _every subsequent restart is a no-op_ — the
+init container logs `runtime copy preserved (configmap unchanged: <hash>)` and
+the stale copy is loaded forever.
+
+This is how the `memory.search.provider` fix appeared not to apply: the
+ConfigMap was correct, ArgoCD reported Synced, the pod was restarted twice, and
+the gateway still logged the `"remote"` warning, because it was reading a copy
+that had been clobbered back to the pre-fix content.
+
+Clear the marker to force a re-seed. Do this after any ConfigMap change that a
+plain restart did not pick up:
+
+```sh
+POD=$(kubectl get pods -n agents-shared -l app.kubernetes.io/name=puck -o name | head -1 | cut -d/ -f2)
+kubectl exec -n agents-shared "$POD" -c openclaw -- rm -f /root/.openclaw/runtime-config/.configmap-source.sha256
+kubectl delete pod -n agents-shared "$POD"
+```
+
+Then confirm the value actually landed rather than trusting the restart:
+
+```sh
+POD=$(kubectl get pods -n agents-shared -l app.kubernetes.io/name=puck -o name | head -1 | cut -d/ -f2)
+kubectl logs -n agents-shared "$POD" -c seed-workspace | grep openclaw.json   # want "seeding", not "preserved"
+kubectl exec -n agents-shared "$POD" -c openclaw -- grep -n openai-compatible /root/.openclaw/runtime-config/openclaw.json
+```
+
+A freshly seeded copy still has its JSON5 comments; a doctor-rewritten one does
+not, which is a quick way to tell which of the two the gateway is running.
+
 Puck's own work — finished pieces, drafts, methodology notes — lives
 in `puck-graph/pages/`, not in source code.
