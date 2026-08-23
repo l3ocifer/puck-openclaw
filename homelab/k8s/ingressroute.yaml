@@ -5,18 +5,18 @@ metadata:
   name: puck
   namespace: agents-shared
 spec:
-  entryPoints: [websecure]
+  # Cloudflare terminates TLS and the tunnel speaks plain HTTP to Traefik's
+  # `web` entrypoint; a websecure-only router, a `tls:` block (TLS-only
+  # routers on every entrypoint) or a cross-namespace middleware ref
+  # (allowCrossNamespace is off) each make Traefik drop the router -> 404.
+  entryPoints: [web]
   routes:
     - match: Host(`puck.leopaska.xyz`)
       kind: Rule
       services:
         - { name: puck, port: 18789 }
       middlewares:
-        - { name: authelia, namespace: authelia }
-  tls:
-    secretName: puck-leopaska-tls
-    domains:
-      - main: puck.leopaska.xyz
+        - { name: authelia }   # agents-shared copy (homelab infrastructure/authelia-middleware.yaml)
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
