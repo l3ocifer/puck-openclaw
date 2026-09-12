@@ -9,8 +9,14 @@
       // Override the built-in `openai` provider so the OpenClaw embedded
       // harness — which falls back to `openai/gpt-5.5` when the
       // agentRuntime is left unspecified — routes through the same
-      // LiteLLM gateway as the main agent. The matching `gpt-5.5 -> chat`
-      // alias lives in homelab argocd/apps/_inference/40-litellm-config.yaml.
+      // LiteLLM gateway as the main agent.
+      //
+      // 2026-09-12 paradigm: the `gpt-5.5 -> chat` model_group_alias was
+      // removed from the cluster LiteLLM config 2026-08-22 (real `gpt-*`
+      // model names now route to REAL OpenAI there, not vllm-chat) and
+      // `gpt-5.5` is not in this agent's LiteLLM key allowlist. The local
+      // catalog id below is now literally `chat` so the embedded-harness's
+      // implicit default resolves straight to the fleet default model.
       openai: {
         baseUrl: "http://litellm.inference.svc.cluster.local:4000/v1",
         apiKey: { source: "env", provider: "default", id: "OPENAI_API_KEY" },
@@ -22,8 +28,10 @@
         request: { allowPrivateNetwork: true },
         models: [
           {
-            id: "gpt-5.5",
-            name: "Embedded harness fallback — alias to LiteLLM chat",
+            // 2026-09-12 paradigm: was id "gpt-5.5" (removed LiteLLM alias,
+            // now routes to real OpenAI there). Points directly at `chat`.
+            id: "chat",
+            name: "Embedded harness fallback — LiteLLM chat (vllm-chat / Qwen3.5 27B AWQ)",
             reasoning: false,
             input: ["text"],
             cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
@@ -81,8 +89,12 @@
             maxTokens: 8192,
           },
           {
-            id: "frontier",
-            name: "Frontier — careful prose (Qwen3-Coder 480B MoE, slow / opt-in)",
+            // 2026-09-12 paradigm: was id "frontier" (llamacpp-blade Qwen3-Coder
+            // 480B). `frontier` is no longer in this agent's LiteLLM key
+            // allowlist -- SOTA/frontier subscriptions now orchestrate only.
+            // Points at `agent-quality` (CheaperInference GLM-5.3, thinking on).
+            id: "agent-quality",
+            name: "Frontier — careful prose (now GLM-5.3 via LiteLLM agent-quality, opt-in)",
             reasoning: true,
             input: ["text"],
             cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },

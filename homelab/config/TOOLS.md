@@ -27,11 +27,18 @@ Puck calls models via LiteLLM (`http://litellm.litellm.svc:4000/v1`):
 | `chat`       | default conversational + drafting                              |
 | `code`       | scripting/automation in skills                                 |
 | `long`       | book-length context (full manuscript review)                   |
-| `frontier`   | careful prose work — limited budget                            |
+| `agent-quality` | careful prose work — limited budget (was `frontier`, now GLM-5.3) |
 | `embed`      | embeddings for portfolio search                                |
 | `tts`        | text-to-speech (LiteLLM-routed; coqui or openai-tts behind it) |
 | `transcribe` | whisper for audio/video transcripts                            |
 | `image`      | image gen (sdxl-vllm if unparked, else openai/dalle)           |
+
+2026-09-12 paradigm: this agent's LiteLLM key is scoped to exactly
+`chat`, `agent`, `agent-fast`, `agent-quality`, `aux`, `long`, `code`,
+`embed`, `rerank`, `transcribe`. `frontier`, `auto`, `codex-*`,
+`gpt-5.5`, and direct Claude/OpenAI API keys are no longer available
+to agents -- those subscriptions now orchestrate only, not agent
+fallbacks.
 
 Puck is the most model-diverse agent. Different work needs different
 tools.

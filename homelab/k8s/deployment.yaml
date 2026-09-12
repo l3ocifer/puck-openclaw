@@ -80,11 +80,15 @@ spec:
               }
               JSON
               # Per-agent models.json — register the LiteLLM model catalog
-              # for chat/long/frontier. Fleet default is `chat` (vllm-chat
-              # on thebeast). Long/frontier are opt-in only so a wedged
+              # for chat/long/agent-quality. Fleet default is `chat` (vllm-chat
+              # on thebeast). Long/agent-quality are opt-in only so a wedged
               # long backend cannot hang normal agent work.
               # contextWindow values mirror max_input_tokens in the
               # in-cluster LiteLLM config (40-litellm-config.yaml).
+              # 2026-09-12 paradigm: the frontier entry below was renamed to
+              # `agent-quality` (GLM-5.3) -- `frontier` is no longer in this
+              # agent's LiteLLM key allowlist; SOTA/frontier subscriptions
+              # now orchestrate only.
               cat > /agent-state/models.json <<JSON
               {
                 "providers": {
@@ -96,7 +100,7 @@ spec:
                     "models": [
                       {"id":"chat","name":"LiteLLM chat (vllm-chat / Qwen3.5 27B AWQ)","contextWindow":20480,"maxTokens":4096,"input":["text"],"cost":{"input":0,"output":0,"cacheRead":0,"cacheWrite":0}},
                       {"id":"long","name":"LiteLLM long (vllm-long / Qwen3.5 9B AWQ + DeltaNet)","contextWindow":262144,"maxTokens":8192,"input":["text"],"cost":{"input":0,"output":0,"cacheRead":0,"cacheWrite":0}},
-                      {"id":"frontier","name":"LiteLLM frontier (Qwen3-Coder 480B MoE, opt-in)","contextWindow":65536,"maxTokens":8192,"input":["text"],"cost":{"input":0,"output":0,"cacheRead":0,"cacheWrite":0}}
+                      {"id":"agent-quality","name":"LiteLLM agent-quality (GLM-5.3, opt-in, was frontier)","contextWindow":65536,"maxTokens":8192,"input":["text"],"cost":{"input":0,"output":0,"cacheRead":0,"cacheWrite":0}}
                     ]
                   }
                 },
@@ -227,7 +231,12 @@ spec:
             # when no explicit --model is passed (heartbeat, cron, sub-agent).
             # Its `openai` provider checks OPENAI_API_KEY / OPENAI_BASE_URL
             # env directly, so route both at the cluster LiteLLM proxy.
-            # gpt-5.5 is a model_group_alias on LiteLLM mapping to chat.
+            # 2026-09-12 paradigm: gpt-5.5 is no longer a LiteLLM
+            # model_group_alias (removed 2026-08-22; gpt-* now routes to
+            # real OpenAI there) and is not in this agent's key allowlist.
+            # The local openclaw.json catalog override (config/openclaw.json)
+            # now registers `chat` directly under the `openai` provider so
+            # the embedded harness's implicit default resolves to it.
             - name: OPENAI_API_KEY
               valueFrom:
                 secretKeyRef:
