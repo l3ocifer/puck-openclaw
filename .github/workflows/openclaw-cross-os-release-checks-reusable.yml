@@ -670,7 +670,7 @@ jobs:
 
       - name: Upload candidate artifact
         id: upload_candidate
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v7
         with:
           name: openclaw-cross-os-release-checks-candidate-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/openclaw-cross-os-release-checks/prepare/package/${{ steps.candidate_metadata.outputs.file_name }}
@@ -679,7 +679,7 @@ jobs:
       - name: Upload baseline artifact
         if: ${{ inputs.mode != 'fresh' }}
         id: upload_baseline
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v7
         with:
           name: openclaw-cross-os-release-checks-baseline-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/openclaw-cross-os-release-checks/prepare/baseline/${{ steps.baseline_metadata.outputs.file_name }}
@@ -1001,7 +1001,7 @@ jobs:
 
       - name: Upload release-check artifacts
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v7
         with:
           name: openclaw-cross-os-release-checks-${{ matrix.artifact_name }}-${{ matrix.suite }}-${{ github.run_id }}
           path: ${{ runner.temp }}/openclaw-cross-os-release-checks/${{ matrix.artifact_name }}-${{ matrix.suite }}

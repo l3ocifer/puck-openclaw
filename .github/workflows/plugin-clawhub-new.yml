@@ -575,7 +575,7 @@ jobs:
 
       - name: Upload immutable ClawHub bootstrap artifact
         id: upload
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v7
         with:
           archive: true
           name: ${{ steps.artifact.outputs.name }}
@@ -768,7 +768,7 @@ jobs:
             --terminal-run-attempt "${GITHUB_RUN_ATTEMPT}"
 
       - name: Upload immutable bootstrap validation evidence
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v7
         with:
           name: clawhub-bootstrap-validation-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
@@ -1045,7 +1045,7 @@ jobs:
             --terminal-run-attempt "${GITHUB_RUN_ATTEMPT}"
 
       - name: Upload ClawHub bootstrap readback evidence
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v7
         with:
           name: clawhub-bootstrap-readback-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/clawhub-bootstrap-readback.json

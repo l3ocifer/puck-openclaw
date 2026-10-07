@@ -354,7 +354,7 @@ jobs:
 
       - name: Upload extended-stable plugin npm packages
         if: ${{ inputs.npm_dist_tag == 'extended-stable' }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v7
         with:
           name: openclaw-plugin-npm-preflight-${{ inputs.tag }}
           path: ${{ steps.plugin_npm_preflight.outputs.dir }}
@@ -655,7 +655,7 @@ jobs:
           node --import tsx scripts/openclaw-npm-prepublish-verify.ts "${verify_args[@]}"
 
       - name: Upload dependency release evidence
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v7
         with:
           name: openclaw-release-dependency-evidence-${{ inputs.tag }}
           path: ${{ steps.dependency_evidence.outputs.dir }}
@@ -663,21 +663,21 @@ jobs:
 
       - name: Upload dependency release evidence tag alias
         if: ${{ steps.packed_tarball.outputs.release_tag != inputs.tag }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v7
         with:
           name: openclaw-release-dependency-evidence-${{ steps.packed_tarball.outputs.release_tag }}
           path: ${{ steps.dependency_evidence.outputs.dir }}
           if-no-files-found: error
 
       - name: Upload dependency release evidence
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v6
         with:
           name: openclaw-release-dependency-evidence-${{ inputs.tag }}
           path: ${{ steps.dependency_evidence.outputs.dir }}
           if-no-files-found: error
 
       - name: Upload prepared npm publish bundle
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v7
         with:
           name: openclaw-npm-preflight-${{ inputs.tag }}
           path: ${{ steps.packed_tarball.outputs.dir }}
@@ -685,7 +685,7 @@ jobs:
 
       - name: Upload prepared npm publish bundle tag alias
         if: ${{ steps.packed_tarball.outputs.release_tag != inputs.tag }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v7
         with:
           name: openclaw-npm-preflight-${{ steps.packed_tarball.outputs.release_tag }}
           path: ${{ steps.packed_tarball.outputs.dir }}

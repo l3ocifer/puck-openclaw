@@ -730,7 +730,7 @@ jobs:
 
       - name: Upload ClawHub bootstrap approval
         if: ${{ steps.clawhub_plan.outputs.bootstrap_should_dispatch == 'true' }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v7
         with:
           name: clawhub-bootstrap-approval-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/clawhub-bootstrap-approval/approval.json
@@ -793,7 +793,7 @@ jobs:
 
       - name: Upload Android release approval
         if: ${{ inputs.publish_openclaw_npm && !contains(inputs.tag, '-alpha.') && !contains(inputs.tag, '-beta.') }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v7
         with:
           name: android-release-approval-${{ github.run_id }}
           path: ${{ runner.temp }}/android-release-approval/approval.json
@@ -2342,7 +2342,7 @@ jobs:
 
       - name: Upload postpublish evidence
         if: ${{ always() && inputs.publish_openclaw_npm }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v7
         with:
           name: openclaw-release-postpublish-evidence-${{ inputs.tag }}
           path: ${{ runner.temp }}/openclaw-release-postpublish-evidence

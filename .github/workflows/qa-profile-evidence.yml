@@ -396,7 +396,7 @@ jobs:
 
       - name: Upload QA profile evidence
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v7
         with:
           name: qa-profile-evidence-${{ steps.profile.outputs.profile }}-${{ needs.validate_selected_ref.outputs.selected_revision }}
           path: ${{ steps.run_profile.outputs.output_dir }}

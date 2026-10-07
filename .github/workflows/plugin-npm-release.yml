@@ -551,7 +551,7 @@ jobs:
 
       - name: Upload immutable npm preflight artifact
         id: upload_preflight_artifact
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v7
         with:
           name: ${{ steps.preflight_artifact.outputs.name }}
           path: ${{ steps.preflight_artifact.outputs.dir }}
@@ -964,7 +964,7 @@ jobs:
           echo "artifact_path=$output_dir" >> "$GITHUB_OUTPUT"
 
       - name: Upload immutable plugin npm preflight evidence
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v7
         with:
           name: ${{ steps.preflight_evidence.outputs.artifact_name }}
           path: ${{ steps.preflight_evidence.outputs.artifact_path }}/*

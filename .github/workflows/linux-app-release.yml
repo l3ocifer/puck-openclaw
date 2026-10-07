@@ -151,7 +151,7 @@ jobs:
             "dist/linux-app/signatures/OpenClaw-${version}-amd64.AppImage.sig"
 
       - name: Upload Linux bundles
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v7
         with:
           name: linux-app-release
           path: dist/linux-app
@@ -221,7 +221,7 @@ jobs:
             "dist/macos-app/signatures/OpenClaw-${version}-darwin-aarch64.app.tar.gz.sig"
 
       - name: Upload macOS test bundles
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v7
         with:
           name: macos-app-release
           path: dist/macos-app
@@ -286,7 +286,7 @@ jobs:
           Copy-Item -LiteralPath $signature -Destination "dist/windows-app/signatures/OpenClaw-$version-windows-x86_64.exe.sig"
 
       - name: Upload Windows test bundle
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v7
         with:
           name: windows-app-release
           path: dist/windows-app

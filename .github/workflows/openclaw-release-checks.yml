@@ -647,7 +647,7 @@ jobs:
       - name: Upload release package artifact
         id: release_package_upload
         if: inputs.candidate_artifact_json == ''
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v7
         with:
           name: ${{ steps.artifact.outputs.name }}
           path: |
@@ -1066,7 +1066,7 @@ jobs:
       - name: Upload parity lane artifacts
         id: upload_parity_lane_artifacts
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v7
         with:
           name: release-qa-parity-${{ matrix.lane }}-${{ needs.resolve_target.outputs.revision }}
           path: .artifacts/qa-e2e/
@@ -1120,7 +1120,7 @@ jobs:
 
       - name: Upload advisory status
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v7
         with:
           name: release-check-status-qa-parity-${{ matrix.lane }}-${{ needs.resolve_target.outputs.revision }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: .artifacts/release-check-status/qa_lab_parity_lane_release_checks-${{ matrix.lane }}-${{ github.run_id }}-${{ github.run_attempt }}.env
@@ -1180,7 +1180,7 @@ jobs:
       - name: Upload parity artifacts
         id: upload_parity_artifacts
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v7
         with:
           name: release-qa-parity-${{ needs.resolve_target.outputs.revision }}
           path: .artifacts/qa-e2e/
@@ -1199,7 +1199,7 @@ jobs:
 
       - name: Upload advisory status
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v7
         with:
           name: release-check-status-qa-parity-report-${{ needs.resolve_target.outputs.revision }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: .artifacts/release-check-status/qa_lab_parity_report_release_checks-${{ github.run_id }}-${{ github.run_attempt }}.env
@@ -1316,7 +1316,7 @@ jobs:
       - name: Upload runtime-pair lane artifacts
         id: upload_runtime_parity_artifacts
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v7
         with:
           name: release-qa-runtime-pair-lane-${{ matrix.lane }}-${{ needs.resolve_target.outputs.revision }}
           path: .artifacts/qa-e2e/
@@ -1336,7 +1336,7 @@ jobs:
 
       - name: Upload runtime-pair lane status
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v7
         with:
           name: release-internal-status-qa-runtime-pair-lane-${{ matrix.lane }}-${{ needs.resolve_target.outputs.revision }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: .artifacts/release-check-status/qa_lab_runtime_pair_lane_release_checks-${{ matrix.lane }}-${{ github.run_id }}-${{ github.run_attempt }}.env
@@ -1422,7 +1422,7 @@ jobs:
       - name: Upload runtime parity artifacts
         id: upload_runtime_parity_artifacts
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v7
         with:
           name: release-qa-runtime-parity-${{ needs.resolve_target.outputs.revision }}
           path: .artifacts/qa-e2e/
@@ -1441,7 +1441,7 @@ jobs:
 
       - name: Upload advisory status
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v7
         with:
           name: release-check-status-qa-runtime-parity-${{ needs.resolve_target.outputs.revision }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: .artifacts/release-check-status/qa_lab_runtime_parity_release_checks-${{ github.run_id }}-${{ github.run_attempt }}.env
@@ -1543,7 +1543,7 @@ jobs:
 
       - name: Upload runtime tool coverage artifacts
         if: ${{ always() && steps.verify_runtime_parity_status.outputs.ready == 'true' }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v7
         with:
           name: release-qa-runtime-tool-coverage-${{ needs.resolve_target.outputs.revision }}
           path: .artifacts/qa-e2e/runtime-pair-core-report/
@@ -1785,7 +1785,7 @@ jobs:
       - name: Upload Discord QA artifacts
         id: upload_discord_qa_artifacts
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v7
         with:
           name: release-qa-live-discord-${{ needs.resolve_target.outputs.revision }}
           path: .artifacts/qa-e2e/
@@ -1804,7 +1804,7 @@ jobs:
 
       - name: Upload advisory status
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v7
         with:
           name: release-check-status-qa-live-discord-${{ needs.resolve_target.outputs.revision }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: .artifacts/release-check-status/qa_live_discord_release_checks-${{ github.run_id }}-${{ github.run_attempt }}.env
@@ -1884,7 +1884,7 @@ jobs:
       - name: Upload WhatsApp QA artifacts
         id: upload_whatsapp_qa_artifacts
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v7
         with:
           name: release-qa-live-whatsapp-${{ needs.resolve_target.outputs.revision }}
           path: .artifacts/qa-e2e/
@@ -1903,7 +1903,7 @@ jobs:
 
       - name: Upload advisory status
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v7
         with:
           name: release-check-status-qa-live-whatsapp-${{ needs.resolve_target.outputs.revision }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: .artifacts/release-check-status/qa_live_whatsapp_release_checks-${{ github.run_id }}-${{ github.run_attempt }}.env
@@ -1980,7 +1980,7 @@ jobs:
       - name: Upload Slack QA artifacts
         id: upload_slack_qa_artifacts
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v7
         with:
           name: release-qa-live-slack-${{ needs.resolve_target.outputs.revision }}
           path: .artifacts/qa-e2e/
@@ -1999,7 +1999,7 @@ jobs:
 
       - name: Upload advisory status
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v7
         with:
           name: release-check-status-qa-live-slack-${{ needs.resolve_target.outputs.revision }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: .artifacts/release-check-status/qa_live_slack_release_checks-${{ github.run_id }}-${{ github.run_attempt }}.env
