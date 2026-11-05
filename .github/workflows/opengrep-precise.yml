@@ -89,7 +89,7 @@ jobs:
           scripts/run-opengrep.sh --changed --sarif --error
 
       - name: Upload SARIF to GitHub Code Scanning
-        uses: github/codeql-action/upload-sarif@7188fc363630916deb702c7fdcf4e481b751f97a
+        uses: github/codeql-action/upload-sarif@1fc58d04a4d4374f921bdac573c3811c240f9c26
         # Only upload if the scan actually produced a SARIF file.
         if: always() && hashFiles('.opengrep-out/precise.sarif') != ''
         with:

@@ -1208,7 +1208,7 @@ jobs:
 
       - name: Download OpenClaw Docker E2E package
         if: contains(matrix.profiles, inputs.release_test_profile) && steps.plan.outputs.needs_package == '1'
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
           artifact-ids: ${{ needs.prepare_docker_e2e_image.outputs.package_artifact_id }}
           path: .artifacts/docker-e2e-package
@@ -1234,7 +1234,7 @@ jobs:
 
       - name: Download Docker E2E image artifact
         if: contains(matrix.profiles, inputs.release_test_profile) && inputs.shared_image_policy == 'no-push-artifact' && needs.prepare_docker_e2e_image.outputs.needs_e2e_image == '1'
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
           artifact-ids: ${{ needs.prepare_docker_e2e_image.outputs.image_artifact_id }}
           path: .artifacts/docker-e2e-images
@@ -1535,7 +1535,7 @@ jobs:
 
       - name: Download OpenClaw Docker E2E package
         if: steps.plan.outputs.needs_package == '1'
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
           artifact-ids: ${{ needs.prepare_docker_e2e_image.outputs.package_artifact_id }}
           path: .artifacts/docker-e2e-package
@@ -1561,7 +1561,7 @@ jobs:
 
       - name: Download Docker E2E image artifact
         if: inputs.shared_image_policy == 'no-push-artifact' && needs.prepare_docker_e2e_image.outputs.needs_e2e_image == '1'
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
           artifact-ids: ${{ needs.prepare_docker_e2e_image.outputs.image_artifact_id }}
           path: .artifacts/docker-e2e-images
@@ -1769,7 +1769,7 @@ jobs:
 
       - name: Download OpenClaw Docker E2E package
         if: steps.plan.outputs.needs_package == '1'
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
           artifact-ids: ${{ needs.prepare_docker_e2e_image.outputs.package_artifact_id }}
           path: .artifacts/docker-e2e-package
@@ -1795,7 +1795,7 @@ jobs:
 
       - name: Download Docker E2E image artifact
         if: inputs.shared_image_policy == 'no-push-artifact' && needs.prepare_docker_e2e_image.outputs.needs_e2e_image == '1'
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
           artifact-ids: ${{ needs.prepare_docker_e2e_image.outputs.image_artifact_id }}
           path: .artifacts/docker-e2e-images
@@ -2064,7 +2064,7 @@ jobs:
 
       - name: Download current-run OpenClaw Docker E2E package
         if: steps.plan.outputs.needs_package == '1' && inputs.package_artifact_id != '' && inputs.package_artifact_run_id == github.run_id
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
           artifact-ids: ${{ inputs.package_artifact_id }}
           path: .artifacts/docker-e2e-package
@@ -2073,7 +2073,7 @@ jobs:
 
       - name: Download previous-run OpenClaw Docker E2E package
         if: steps.plan.outputs.needs_package == '1' && inputs.package_artifact_id != '' && inputs.package_artifact_run_id != github.run_id
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
           artifact-ids: ${{ inputs.package_artifact_id }}
           path: .artifacts/docker-e2e-package
@@ -2538,7 +2538,7 @@ jobs:
 
       - name: Build shared live-test image
         if: inputs.shared_image_policy == 'no-push-artifact'
-        uses: useblacksmith/build-push-action@fb9e3e6a9299c78462bfadd0d93352c316adc9b8 # v2
+        uses: useblacksmith/build-push-action@9b0579bbec7a6cad2f171596c57e7ac1e7658850 # v2
         with:
           context: .
           file: ./Dockerfile
@@ -2714,7 +2714,7 @@ jobs:
 
       - name: Download live-test image artifact
         if: contains(matrix.profiles, inputs.release_test_profile) && inputs.shared_image_policy == 'no-push-artifact'
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
           artifact-ids: ${{ needs.prepare_live_test_image.outputs.image_artifact_id }}
           path: .artifacts/live-test-image
@@ -2882,7 +2882,7 @@ jobs:
 
       - name: Download live-test image artifact
         if: inputs.shared_image_policy == 'no-push-artifact'
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
           artifact-ids: ${{ needs.prepare_live_test_image.outputs.image_artifact_id }}
           path: .artifacts/live-test-image
@@ -3585,7 +3585,7 @@ jobs:
 
       - name: Download live-test image artifact
         if: steps.codex_compat.outputs.run_lane != 'false' && contains(matrix.profiles, inputs.release_test_profile) && (inputs.live_suite_filter == '' || inputs.live_suite_filter == matrix.suite_id || inputs.live_suite_filter == matrix.suite_group) && inputs.shared_image_policy == 'no-push-artifact'
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
           artifact-ids: ${{ needs.prepare_live_test_image.outputs.image_artifact_id }}
           path: .artifacts/live-test-image
