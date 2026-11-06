@@ -314,21 +314,21 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Download Linux bundles
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
           name: linux-app-release
           path: dist/input/linux
 
       - name: Download macOS test bundles
         if: ${{ inputs['desktop-test-bundles'] }}
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
           name: macos-app-release
           path: dist/input/macos
 
       - name: Download Windows test bundle
         if: ${{ inputs['desktop-test-bundles'] }}
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
           name: windows-app-release
           path: dist/input/windows
